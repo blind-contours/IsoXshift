@@ -51,14 +51,12 @@ integrate_psi_aw_g_quant <- function(at, av, covars, w_names, pseudo_model, g_mo
         g_val <- g_model$predict(task_g)
         index <- bin_a
         g_val <- unlist(g_val)[[index]]
-      }else{
+      } else {
         g_val <- g_model$predict(task_g)$likelihood
       }
-
-
-    }else{
+    } else {
       g_val <- suppressMessages(predict(g_model, new_A = new_data_g[[exposure]], new_W = new_data_g[w_names]))
-  }
+    }
     output <- m_val * g_val
 
     return(output)

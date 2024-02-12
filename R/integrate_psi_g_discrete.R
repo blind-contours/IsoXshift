@@ -76,7 +76,7 @@ integrate_psi_g_discrete <- function(av, at, covars, w_names, q_model, r_model, 
         r_val <- r_model$predict(task_r)$likelihood
         output <- m_val * r_val
       }
-    }else{
+    } else {
       r_val <- suppressMessages(predict(r_model, new_A = new_data_r[[mediator]], new_W = new_data_r[w_names]))
       output <- m_val * r_val
     }
@@ -126,12 +126,12 @@ integrate_psi_g_discrete <- function(av, at, covars, w_names, q_model, r_model, 
         r_vals <- unlist(r_val, recursive = FALSE)
         likelihood_r <- sapply(r_vals, function(x) x[[sample_z]])
         output <- m_val * likelihood * likelihood_r
-      }else{
+      } else {
         likelihood <- g_val$likelihood
         r_val <- r_model$predict(task_r)$likelihood
         output <- m_val * likelihood * r_val
       }
-    }else{
+    } else {
       r_val <- suppressMessages(predict(r_model, new_A = new_data_r[[mediator]], new_W = new_data_r[w_names]))
       g_val <- suppressMessages(predict(g_model, new_A = new_data_g[[exposure]], new_W = new_data_g[w_names]))
       output <- m_val * g_val * r_val
@@ -153,7 +153,7 @@ integrate_psi_g_discrete <- function(av, at, covars, w_names, q_model, r_model, 
       }))
     } else {
       if (method == "MC") {
-        mc_integrands_inner <- integrand_m_r(sample_z_inner  = sample_z, row_data, covars, w_names, q_model, r_model, exposure, mediator, delta, upper_bound, density_type, use_multinomial)
+        mc_integrands_inner <- integrand_m_r(sample_z_inner = sample_z, row_data, covars, w_names, q_model, r_model, exposure, mediator, delta, upper_bound, density_type, use_multinomial)
         integral_inner <- (max(sample_z) - min(sample_z)) * mean(mc_integrands_inner)
       } else {
         integral_inner <- stats::integrate(

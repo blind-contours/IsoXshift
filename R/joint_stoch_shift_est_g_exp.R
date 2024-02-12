@@ -57,13 +57,13 @@ joint_stoch_shift_est_g_exp <- function(exposures,
   create_shifted_data <- function(data, exposure, delta, lower_bound, upper_bound) {
     shifted_data <- data.table::copy(data)
     data.table::set(shifted_data,
-                    j = exposure,
-                    value = shift_additive(
-                      a = data[[exposure]],
-                      delta = delta,
-                      lower_bound = lower_bound,
-                      upper_bound = upper_bound
-                    )
+      j = exposure,
+      value = shift_additive(
+        a = data[[exposure]],
+        delta = delta,
+        lower_bound = lower_bound,
+        upper_bound = upper_bound
+      )
     )
     return(shifted_data)
   }
@@ -265,7 +265,6 @@ joint_stoch_shift_est_g_exp <- function(exposures,
           at_upupshifted <- create_shifted_data(at, exposure, 2 * delta_reduced, lower_bound, upper_bound)
 
           if (density_type == "sl") {
-
             sl_task <- sl3::sl3_Task$new(
               data = at,
               outcome = exposure,

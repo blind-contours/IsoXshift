@@ -11,7 +11,7 @@
 
 simulate_mediation_data <- function(n_obs = 100000,
                                     delta = 1,
-                                    n_bins = 10)  {
+                                    n_bins = 10) {
   # simulate some baseline covariates
   w_1 <- rnorm(n_obs, mean = 20, 2)
   w_2 <- rbinom(n_obs, 1, 0.5)

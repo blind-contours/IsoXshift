@@ -101,49 +101,6 @@ fit_basis_estimators <- function(at,
   full_residual_SS <- (at[, get(outcome)] - sl_fit$predict())^2
 
 
-  if (grepl("ranger", learner_name)) {
-    # Initialize a list to hold terminal leaf information
-
-    fit <- selected_learner$fit_object
-
-    # Function to extract the path leading to a node
-    get_path <- function(node_id, tree) {
-      path <- c()
-
-      while(node_id != 0) {
-        parent_id <- which(tree$leftChild == node_id | tree$rightChild == node_id)
-        if (length(parent_id) == 0) {
-          break
-        }
-
-        path <- c(path, tree$splitvarName[parent_id])
-        node_id <- parent_id
-      }
-
-      return(rev(path))
-    }
-
-    # Extract terminal nodes and their paths for a specific tree
-    extract_paths_from_tree <- function(tree) {
-      terminal_nodes <- tree$nodeID[tree$terminal]
-      paths <- lapply(terminal_nodes, function(node) get_path(node, tree))
-      names(paths) <- terminal_nodes
-      return(paths)
-    }
-
-    # Using treeInfo on your fit to get the tree details for the first tree (as an example)
-    tree <- treeInfo(fit, 1)
-
-    # Extract terminal node paths for the first tree
-    paths_for_tree_1 <- extract_paths_from_tree(tree)
-
-    # Print the paths
-    str(paths_for_tree_1)
-
-
-
-  }
-
   if (grepl("earth", learner_name)) {
     best_model_basis <- as.data.frame(model.matrix(
       selected_learner$fit_object
@@ -166,7 +123,6 @@ fit_basis_estimators <- function(at,
   }
 
   if (grepl("polspline", learner_name)) {
-
     get_pred_knot <- function(i, covars, pred, knot) {
       for (j in 1:length(covars)) {
         pred_match <- sub(paste("^", j, sep = ""), covars[j], pred)
@@ -189,13 +145,16 @@ fit_basis_estimators <- function(at,
 
       anova_fit <- as.data.frame(single_pred)
       rownames(anova_fit) <- anova_fit
-
     } else {
-      pred1_res <- get_pred_knot(1, covars, selected_learner$fit_object$model$pred1[-1],
-                                 selected_learner$fit_object$model$knot1[-1])
+      pred1_res <- get_pred_knot(
+        1, covars, selected_learner$fit_object$model$pred1[-1],
+        selected_learner$fit_object$model$knot1[-1]
+      )
 
-      pred2_res <- get_pred_knot(2, covars, selected_learner$fit_object$model$pred2[-1],
-                                 selected_learner$fit_object$model$knot2[-1])
+      pred2_res <- get_pred_knot(
+        2, covars, selected_learner$fit_object$model$pred2[-1],
+        selected_learner$fit_object$model$knot2[-1]
+      )
 
       splines <- data.frame(
         pred1 = pred1_res$pred,
@@ -208,8 +167,9 @@ fit_basis_estimators <- function(at,
       splines[splines == 0] <- ""
 
       colnames(best_model_basis) <- paste(splines$pred1, splines$knot1,
-                                          splines$pred2, splines$knot2,
-                                          sep = "")
+        splines$pred2, splines$knot2,
+        sep = ""
+      )
 
       polymars_model <- lm(data[, get(outcome)] ~ ., data = as.data.frame(best_model_basis))
 
@@ -217,8 +177,9 @@ fit_basis_estimators <- function(at,
 
       if (quantile_thresh != 0) {
         anova_fit <- subset(anova_fit, `F value` > quantile(anova_fit$`F value`,
-                                                            quantile_thresh,
-                                                            na.rm = TRUE))
+          quantile_thresh,
+          na.rm = TRUE
+        ))
       }
     }
   }

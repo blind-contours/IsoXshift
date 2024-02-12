@@ -21,13 +21,13 @@
 #' @return A \code{numeric} vector containing the shifted exposure values.
 joint_shift_additive <- function(a1, a2, w = NULL, delta1, delta2, lower_bound1, upper_bound1, lower_bound2, upper_bound2) {
   shifted_treatment1 <- ifelse(a1 + delta1 <= upper_bound1 & a1 + delta1 >= lower_bound1,
-                               a1 + delta1,
-                               ifelse(a1 + delta1 < lower_bound1, lower_bound1, upper_bound1)
+    a1 + delta1,
+    ifelse(a1 + delta1 < lower_bound1, lower_bound1, upper_bound1)
   )
 
   shifted_treatment2 <- ifelse(a2 + delta2 <= upper_bound2 & a2 + delta2 >= lower_bound2,
-                               a2 + delta2,
-                               ifelse(a2 + delta2 < lower_bound2, lower_bound2, upper_bound2)
+    a2 + delta2,
+    ifelse(a2 + delta2 < lower_bound2, lower_bound2, upper_bound2)
   )
 
   return(list(shifted_treatment1, shifted_treatment2))

@@ -101,11 +101,15 @@ extract_vars_from_basis <- function(common_variables, i, a_names,
   target <- common_variables[i]
   match_list <- list()
 
+  if (length(unlist(strsplit(target, "-"))) == 2) {
+    intxn_vars <- unlist(strsplit(target, "-"))
+  }
   for (j in 1:length(c(a_names, z_names, w_names))) {
     var <- c(a_names, z_names, w_names)[j]
-    matches <- stringr::str_match(target, var)
-    matches[is.na(matches)] <- ""
-    match_list[j] <- matches[[1]]
+    matches <- var == target
+    if (matches) {
+      match_list[j] <- var
+    }
   }
 
   matches <- unlist(match_list[!match_list %in% ""])

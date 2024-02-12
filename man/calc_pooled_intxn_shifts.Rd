@@ -12,7 +12,8 @@ calc_pooled_intxn_shifts(
   a_names,
   w_names,
   z_names,
-  fluctuation
+  fluctuation,
+  n_folds
 )
 }
 \arguments{

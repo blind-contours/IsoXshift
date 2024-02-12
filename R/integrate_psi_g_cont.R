@@ -89,4 +89,3 @@ integrate_psi_g_cont <- function(av, at, covars, w_names, q_model, r_model, g_mo
 
   return(list("d_a" = results, "phi_aw" = integral_inner_results, "phi_aw_g" = integral_outer_results))
 }
-

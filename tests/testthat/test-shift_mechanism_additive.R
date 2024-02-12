@@ -60,4 +60,3 @@ test_that("Simple shifting function shifts upward by magnitude delta", {
 test_that("Simple shifting function shifts upward by twice magnitude delta", {
   expect_equal(unique(gn_spec_fitted$upupshift - A), 2 * delta_shift)
 })
-

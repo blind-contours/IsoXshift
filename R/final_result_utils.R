@@ -1,3 +1,76 @@
+#' @title Calculates the Inverse Variance Pooled Estimate Including Null Folds
+#' @description Does a weighted combination estimate for folds with estimates
+#' and null folds finding 0 using inverse variance
+#' @param results_df Table of results
+#' @param n_folds Total number of folds specified
+#' @export
+
+calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
+  # Identifying the row with the current pooled TMLE
+  pooledRow <- results_df[results_df$Fold == "Pooled TMLE", ]
+  calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
+    # Identifying the row with the current pooled TMLE
+    pooledRow <- results_df[results_df$Fold == "Pooled TMLE", ]
+
+    # Calculate n_0 and n_1
+    n_1 <- nrow(results_df[results_df$Fold != "Pooled TMLE", ])
+    n_0 <- n_folds - n_1
+
+    # Variance of the current pooled estimates
+    var_pooled <- pooledRow$Variance
+
+    # Estimating the variance of the "null" estimate
+    var_null <- var_pooled * n_1 / n_0
+
+    # Standard deviation for the null distribution
+    sd_null <- sqrt(var_null)
+
+    # Sample from the null distribution for each null fold
+    null_samples <- rnorm(n_0, mean = 0, sd = sd_null)
+
+    # Weights
+    w_1 <- 1 / var_pooled
+    w_0 <- 1 / var_null
+
+    # Calculate new pooled estimate and its variance
+    pooled_estimate <- pooledRow$Psi
+
+    # Calculate the weighted average using the sampled null values
+    new_pooled_psi <- (w_1 * pooled_estimate + sum(w_0 * null_samples)) / (w_1 + sum(w_0))
+
+    # Recalculate the variance
+    var_new_pooled <- 1 / (w_1 + sum(w_0))
+
+    # Calculate standard error and confidence intervals
+    se_new_pooled <- sqrt(var_new_pooled)
+    lower_ci <- new_pooled_psi - 1.96 * se_new_pooled
+    upper_ci <- new_pooled_psi + 1.96 * se_new_pooled
+
+    p_value_pooled <- 2 * stats::pnorm(abs(new_pooled_psi / se_new_pooled), lower.tail = F)
+
+    # Add new row to the table
+    new_row <- data.table(
+      Condition = pooledRow$Condition,
+      Psi = new_pooled_psi,
+      Variance = var_new_pooled,
+      SE = se_new_pooled,
+      `Lower CI` = lower_ci,
+      `Upper CI` = upper_ci,
+      `P-value` = p_value_pooled,
+      Fold = "Inverse Variance Pooled",
+      Type = pooledRow$Type,
+      Variables = pooledRow$Variables,
+      N = pooledRow$N,
+      Delta = pooledRow$Delta
+    )
+
+    bind_rows(results_df, new_row)
+  }
+}
+
+
+
+
 #' @title Calculates the Individual Shift Parameter
 #' @description Simply subtract the psi estimates of a shift compared to no
 #' shift. Use the delta method to do the same thing for the eif to derive
@@ -8,7 +81,7 @@
 #' @export
 calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
   condition <- exposure
-  psi_param <- tmle_fit$psi - tmle_fit$noshift_psi
+  psi_param <- tmle_fit$noshift_psi - tmle_fit$psi
   variance_est <- var(tmle_fit$eif - tmle_fit$noshift_eif) /
     length(tmle_fit$eif)
   se_est <- sqrt(variance_est)
@@ -71,18 +144,18 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
   # Prepare data for the tree model
   em_model_data_at <- cbind.data.frame(
     pseudo_outcome_at, subset(at,
-                              select = effect_m_name
+      select = effect_m_name
     )
   )
 
   em_model_data_av <- cbind.data.frame(
     pseudo_outcome_av, subset(av,
-                              select = effect_m_name
+      select = effect_m_name
     )
   )
 
   # Create the formula for the tree model
-  response_var <-  "pseudo_outcome_at"
+  response_var <- "pseudo_outcome_at"
   formula_string <- paste(response_var, "~", effect_m_name)
   formula <- as.formula(formula_string)
 
@@ -133,13 +206,13 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
 
     # Calculate the inverse propensity weights
     inverse_prop_positive <- ifelse(em_split_data$ind == 1,
-                                    1 / (table(em_split_data$ind)[[2]] /
-                                           length(em_split_data$ind)), 0
+      1 / (table(em_split_data$ind)[[2]] /
+        length(em_split_data$ind)), 0
     )
 
     inverse_prop_negative <- ifelse(em_split_data$ind == 0,
-                                    1 / (table(em_split_data$ind)[[1]]
-                                         / length(em_split_data$ind)), 0
+      1 / (table(em_split_data$ind)[[1]]
+      / length(em_split_data$ind)), 0
     )
 
     # Calculate the weighted EIFs
@@ -168,8 +241,10 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
 
     # Store results in a data frame
     results <- data.table::data.table(
-      Condition = c(paste("Level 1 Shift Diff in", rule),
-                    paste("Level 0 Shift Diff in", rule)),
+      Condition = c(
+        paste("Level 1 Shift Diff in", rule),
+        paste("Level 0 Shift Diff in", rule)
+      ),
       Psi = c(psi_em_one, psi_em_zero),
       Variance = c(psi_one_var, psi_zero_var),
       SE = c(sqrt(psi_one_var), sqrt(psi_zero_var)),
@@ -206,13 +281,10 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
 #' @export
 
 calc_final_joint_shift_param <- function(joint_shift_fold_results,
-                                         exposures,
+                                         rank,
                                          fold_k,
-                                         deltas_updated) {
-  conditions <- exposures
-  conditions[[3]] <- paste(conditions[[1]], conditions[[2]], sep = "&")
-  conditions[[4]] <- "Psi"
-
+                                         deltas_updated,
+                                         exposures) {
   results <- lapply(joint_shift_fold_results, calc_joint_results)
   results_table <- do.call(rbind, results)
 
@@ -224,22 +296,22 @@ calc_final_joint_shift_param <- function(joint_shift_fold_results,
   )
 
   joint_intxn_results <- as.data.frame(cbind(
-    unlist(conditions),
+    rep(rank, 4),
     joint_intxn_results,
     rep(fold_k, 4),
-    "Interaction",
-    conditions[[3]],
     length(joint_shift_fold_results[[3]]$eif),
     deltas_updated[[1]],
-    deltas_updated[[2]]
+    deltas_updated[[2]],
+    c(exposures[[1]], exposures[[2]], paste(exposures[[3]], collapse = "-"), "Interaction")
   ))
 
   names(joint_intxn_results) <- c(
-    "Condition", "Psi", "Variance",
+    "Rank", "Psi", "Variance",
     "SE", "Lower CI", "Upper CI",
-    "P-value", "Fold", "Type",
-    "Variables", "N", paste("Delta", conditions[[1]]),
-    paste("Delta", conditions[[2]])
+    "P-value", "Fold", "N",
+    "Delta Exposure 1",
+    "Delta Exposure 2",
+    "Type"
   )
   rownames(joint_intxn_results) <- NULL
   return(joint_intxn_results)

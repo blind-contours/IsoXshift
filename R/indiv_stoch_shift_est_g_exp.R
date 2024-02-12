@@ -277,7 +277,6 @@ indiv_stoch_shift_est_g_exp <- function(exposure,
         at_upupshifted <- create_shifted_data(at, exposure, 2 * delta_reduced, lower_bound, upper_bound)
 
         if (density_type == "sl") {
-
           sl_task <- sl3::sl3_Task$new(
             data = at,
             outcome = exposure,

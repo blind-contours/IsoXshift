@@ -94,7 +94,8 @@ calc_pooled_em_shifts <- function(y,
         at = data,
         av = data,
         effect_m_name = effect_m_name,
-        fold_k = "Pooled TMLE")
+        fold_k = "Pooled TMLE"
+      )
 
       effect_mod_in_fold$Delta <- mean(deltas)
 

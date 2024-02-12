@@ -79,8 +79,7 @@ joint_stoch_shift_est_Q <- function(exposures,
         upper_bound = upper_bound,
         lower_bound = lower_bound
       ))
-
-    }else{
+    } else {
       av_downshifted <- data.table::copy(av)
       data.table::set(av_downshifted, j = exposure, value = joint_shift_additive(
         a1 = av[[exposure[[1]]]],
@@ -110,14 +109,13 @@ joint_stoch_shift_est_Q <- function(exposures,
       data.table::set(av_upupshifted, j = exposure, value = joint_shift_additive(
         a1 = av[[exposure[[1]]]],
         a2 = av[[exposure[[2]]]],
-        delta1 = 2*deltas[[1]],
-        delta2 = 2*deltas[[2]],
+        delta1 = 2 * deltas[[1]],
+        delta2 = 2 * deltas[[2]],
         upper_bound1 = upper_bound,
         lower_bound1 = lower_bound,
         upper_bound2 = upper_bound,
         lower_bound2 = lower_bound
       ))
-
     }
 
     sl <- Lrnr_sl$new(

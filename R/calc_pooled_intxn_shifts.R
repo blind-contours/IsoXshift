@@ -31,110 +31,109 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
                                      a_names,
                                      w_names,
                                      z_names,
-                                     fluctuation) {
+                                     fluctuation,
+                                     n_folds) {
   # set TMLE as default estimator type
   estimator <- match.arg(estimator)
 
   names <- names(intxn_shift_results)
-  names <- gsub("^.+?:", "", names)
-  names <- stringr::str_trim(names)
+  names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
 
-  results_list <- list()
+  k_fold_results_list <- list()
+  pooled_results_list <- list()
+
 
   for (var_set in unique(names)) {
     var_set_results <- intxn_shift_results[stringr::str_detect(
       names(intxn_shift_results), var_set
     )]
 
-    if (length(var_set_results) != 0) {
-      test <- unlist(var_set_results, recursive = FALSE)
+    interaction_sets <- gsub("^.+?:", "", names(var_set_results))
 
-      # Get clever covariate for each shift for each fold ----
+    test <- unlist(var_set_results, recursive = FALSE)
 
-      Hn <- test[stringr::str_detect(names(test), "Hn")]
-      Hn_unlist <- unlist(Hn, recursive = FALSE)
+    # Get clever covariate for each shift for each fold ----
 
-      Hn_1 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-        names(Hn_unlist), "Hn1"
-      )])
-      Hn_2 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-        names(Hn_unlist), "Hn2"
-      )])
-      Hn_3 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-        names(Hn_unlist), "Hn3"
-      )])
+    Hn <- test[stringr::str_detect(names(test), "Hn")]
+    Hn_unlist <- unlist(Hn, recursive = FALSE)
 
-      # Get scaled Qn for each shift for each fold ----
+    Hn_1 <- do.call(rbind, Hn_unlist[stringr::str_detect(
+      names(Hn_unlist), "Hn1"
+    )])
+    Hn_2 <- do.call(rbind, Hn_unlist[stringr::str_detect(
+      names(Hn_unlist), "Hn2"
+    )])
+    Hn_3 <- do.call(rbind, Hn_unlist[stringr::str_detect(
+      names(Hn_unlist), "Hn3"
+    )])
 
-      Qn <- test[stringr::str_detect(names(test), "Qn_scaled")]
-      Qn_unlist <- unlist(Qn, recursive = FALSE)
+    # Get scaled Qn for each shift for each fold ----
 
-      Qn_scaled_1 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-        names(Qn_unlist), "Qn_scaled1"
-      )])
-      Qn_scaled_2 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-        names(Qn_unlist), "Qn_scaled2"
-      )])
-      Qn_scaled_3 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-        names(Qn_unlist), "Qn_scaled3"
-      )])
+    Qn <- test[stringr::str_detect(names(test), "Qn_scaled")]
+    Qn_unlist <- unlist(Qn, recursive = FALSE)
 
-      data <- do.call(rbind, test[stringr::str_detect(
-        names(test), "data"
-      )])
+    Qn_scaled_1 <- do.call(rbind, Qn_unlist[stringr::str_detect(
+      names(Qn_unlist), "Qn_scaled1"
+    )])
+    Qn_scaled_2 <- do.call(rbind, Qn_unlist[stringr::str_detect(
+      names(Qn_unlist), "Qn_scaled2"
+    )])
+    Qn_scaled_3 <- do.call(rbind, Qn_unlist[stringr::str_detect(
+      names(Qn_unlist), "Qn_scaled3"
+    )])
 
-      k_fold_results <- do.call(rbind, test[stringr::str_detect(
-        names(test), "k_fold"
-      )])
+    data <- do.call(rbind, test[stringr::str_detect(
+      names(test), "data"
+    )])
 
-
-      deltas <- do.call(rbind, test[stringr::str_detect(
-        names(test), "deltas"
-      )])
+    k_fold_results <- do.call(rbind, test[stringr::str_detect(
+      names(test), "k_fold"
+    )])
 
 
-      Qn_scaled <- list(Qn_scaled_1, Qn_scaled_2, Qn_scaled_3)
-      Hn <- list(Hn_1, Hn_2, Hn_3)
+    deltas <- do.call(rbind, test[stringr::str_detect(
+      names(test), "deltas"
+    )])
 
-      intxn_results_list <- list()
+
+    Qn_scaled <- list(Qn_scaled_1, Qn_scaled_2, Qn_scaled_3)
+    Hn <- list(Hn_1, Hn_2, Hn_3)
+
+    intxn_results_list <- list()
 
 
-      for (i in 1:length(Hn)) {
-        hn_estim <- Hn[[i]]
-        qn_estim_scaled <- Qn_scaled[[i]]
-        delta <- deltas[[i]]
+    for (i in 1:length(Hn)) {
+      hn_estim <- Hn[[i]]
+      qn_estim_scaled <- Qn_scaled[[i]]
+      delta <- deltas[[i]]
 
-        tmle_fit <- tmle_exposhift(
-          data_internal = data,
-          delta = delta,
-          Qn_scaled = qn_estim_scaled,
-          Hn = hn_estim,
-          fluctuation = fluctuation,
-          y = data$y,
-        )
-
-        intxn_results_list[[i]] <- tmle_fit
-      }
-
-      var_names <- extract_vars_from_basis(
-        var_set, 1,
-        a_names, w_names, z_names
+      tmle_fit <- tmle_exposhift(
+        data_internal = data,
+        delta = delta,
+        Qn_scaled = qn_estim_scaled,
+        Hn = hn_estim,
+        fluctuation = fluctuation,
+        y = data$y,
       )
 
-      intxn_pooled <- calc_final_joint_shift_param(
-        joint_shift_fold_results = intxn_results_list,
-        exposures = var_names$matches,
-        fold_k = "Pooled TMLE",
-        deltas_updated = deltas
-      )
-
-      results_df <- rbind(k_fold_results, intxn_pooled)
-      rownames(results_df) <- NULL
-
-      results_list[[var_set]] <- results_df
-    } else {
-
+      intxn_results_list[[i]] <- tmle_fit
     }
+
+    # var_names <- extract_vars_from_basis(
+    #   var_set, 1,
+    #   a_names, w_names, z_names
+    # )
+
+    intxn_pooled <- calc_final_joint_shift_param(
+      joint_shift_fold_results = intxn_results_list,
+      rank = var_set,
+      fold_k = "Pooled TMLE",
+      deltas_updated = deltas
+    )
+
+
+    pooled_results_list[[var_set]] <- intxn_pooled
+    k_fold_results_list[[var_set]] <- k_fold_results
   }
 
 

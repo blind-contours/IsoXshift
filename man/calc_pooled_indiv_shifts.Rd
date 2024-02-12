@@ -8,7 +8,8 @@ calc_pooled_indiv_shifts(
   indiv_shift_results,
   estimator = c("tmle", "onestep"),
   fluc_mod_out = NULL,
-  fluctuation
+  fluctuation,
+  n_folds
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ output of the internal routines to perform this step of the TML estimation
 procedure, as given by \code{\link{fit_fluctuation}}.}
 
 \item{fluctuation}{Type of fluctuation to use}
+
+\item{n_folds}{Number of folds used in the CV.}
 }
 \value{
 A \code{list} containing the parameter estimate, estimated variance
