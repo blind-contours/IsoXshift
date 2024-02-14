@@ -124,6 +124,7 @@ InterXshift <- function(w,
     colnames(w) <- w_names
   }
 
+
   # coerce W to matrix and, if no names in W, assign them generically
   a <- data.frame(a)
   a_names <- colnames(a)
@@ -311,9 +312,6 @@ InterXshift <- function(w,
 
       }
 
-
-
-
       for (i in 1:nrow(fold_negative_effects)) {
 
         exposure <- fold_negative_effects$Variable[i]
@@ -477,9 +475,9 @@ InterXshift <- function(w,
 
         syngery_in_fold <- calc_final_joint_shift_param(
           joint_shift_fold_results = intxn_results_list,
-          rank,
-          fold_k,
-          deltas_updated,
+          rank = rank,
+          fold_k = fold_k,
+          deltas_updated = deltas_updated,
           exposures = exposures
         )
 
@@ -574,10 +572,10 @@ InterXshift <- function(w,
 
         antagonism_in_fold <- calc_final_joint_shift_param(
           joint_shift_fold_results = intxn_results_list,
-          rank,
-          fold_k,
-          deltas_updated,
-          exposures
+          rank = rank,
+          fold_k = fold_k,
+          deltas_updated = deltas_updated,
+          exposures = exposures
         )
 
         antagonism_rank_fold_results[[
@@ -608,13 +606,13 @@ InterXshift <- function(w,
 
       results_list
     },
-    .options = furrr::furrr_options(seed = seed, packages = "SuperNOVA")
+    .options = furrr::furrr_options(seed = seed, packages = "InterXshift")
   )
 
-  top_positive_results <- purrr::map(fold_SuperNOVA_results, c("top_positive_effects"))
-  top_negative_results <- purrr::map(fold_SuperNOVA_results, c("top_negative_effects"))
-  top_synergy_results <- purrr::map(fold_SuperNOVA_results, c("top_synergy_effects"))
-  top_antagonism_results <- purrr::map(fold_SuperNOVA_results, c("top_antagonism_effects"))
+  top_positive_results <- purrr::map(fold_InterXshift_results, c("top_positive_effects"))
+  top_negative_results <- purrr::map(fold_InterXshift_results, c("top_negative_effects"))
+  top_synergy_results <- purrr::map(fold_InterXshift_results, c("top_synergy_effects"))
+  top_antagonism_results <- purrr::map(fold_InterXshift_results, c("top_antagonism_effects"))
 
   top_positive_results <- unlist(top_positive_results, recursive = FALSE)
   top_negative_results <- unlist(top_negative_results, recursive = FALSE)
@@ -636,8 +634,18 @@ InterXshift <- function(w,
     n_folds = n_folds
   )
 
-  pooled_intxn_shift_results <- calc_pooled_intxn_shifts(
+  pooled_synergy_shift_results <- calc_pooled_intxn_shifts(
     intxn_shift_results = top_synergy_results,
+    estimator = estimator,
+    a_names = a_names,
+    w_names = w_names,
+    z_names = z_names,
+    fluctuation = fluctuation,
+    n_folds = n_folds
+  )
+
+  pooled_antagonism_shift_results <- calc_pooled_intxn_shifts(
+    intxn_shift_results = top_antagonism_results,
     estimator = estimator,
     a_names = a_names,
     w_names = w_names,
@@ -648,11 +656,12 @@ InterXshift <- function(w,
 
 
   results_list <- list(
-    "Basis Fold Proportions" = basis_prop_in_fold,
-    "Effect Mod Results" = pooled_em_shift_results,
-    "Indiv Shift Results" = pooled_indiv_shift_results,
-    "Joint Shift Results" = pooled_intxn_shift_results,
-    "Mediation Shift Results" = pooled_med_shift_results
+    "Pos Shift Results" = pooled_pos_shift_results,
+    "Neg Shift Results" = pooled_neg_shift_results,
+    "K Fold Synergy Results" = pooled_synergy_shift_results$k_fold_results,
+    "Pooled Synergy Results" = pooled_synergy_shift_results$pooled_results,
+    "K Fold Antagonism Results" = pooled_antagonism_shift_results$k_fold_results,
+    "Pooled Antagonism Results" = pooled_antagonism_shift_results$pooled_results
   )
 
   return(results_list)

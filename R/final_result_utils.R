@@ -81,7 +81,7 @@ calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
 #' @export
 calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
   condition <- exposure
-  psi_param <- tmle_fit$noshift_psi - tmle_fit$psi
+  psi_param <-  tmle_fit$psi - tmle_fit$noshift_psi
   variance_est <- var(tmle_fit$eif - tmle_fit$noshift_eif) /
     length(tmle_fit$eif)
   se_est <- sqrt(variance_est)
@@ -274,6 +274,7 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
 #' @title Calculates the Joint Shift Parameter
 #' @description Estimates the shift parameter for a joint shift
 #' @param joint_shift_fold_results Results of the joint shift
+#' @param rank ranking of the interaction found
 #' @param exposures Exposures shifted
 #' @param fold_k Fold the joint shift is identified
 #' @param deltas_updated The new delta, could be updated if Hn has positivity

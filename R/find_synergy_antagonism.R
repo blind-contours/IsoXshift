@@ -68,17 +68,17 @@ find_synergy_antagonism <- function(data, deltas, a_names, w_names, outcome, out
     shifted_data <- as.data.frame(data)
     shifted_data[[var]] <- shifted_data[[var]] + deltas[[var]]
     predictions <- sl_fit$predict(sl3::make_sl3_Task(data = shifted_data, covariates = c(a_names, w_names), outcome = outcome))
-    effect <- mean(data[[outcome]] - predictions)
+    effect <- mean(predictions - data[[outcome]])
     individual_effects_df <- rbind(individual_effects_df, data.frame(Variable = var, Effect = effect))
   }
 
   # Rank individual effects
   individual_effects_df <- individual_effects_df[order(-individual_effects_df$Effect), ]
-  top_positive_effects <- head(individual_effects_df[individual_effects_df$Effect > 0, ], top_n)
-  top_negative_effects <- tail(individual_effects_df[individual_effects_df$Effect < 0, ], top_n)
+  top_positive_effects <- head(individual_effects_df, top_n)
+  top_negative_effects <- tail(individual_effects_df, top_n)
 
   top_positive_effects$Rank <- seq(top_n)
-  top_negative_effects$Rank <- seq(top_n)
+  top_negative_effects$Rank <- rev(seq(top_n))
 
   # Calculate interaction effects
   for (indices in combn(seq_along(a_names), 2, simplify = FALSE)) {
@@ -93,11 +93,11 @@ find_synergy_antagonism <- function(data, deltas, a_names, w_names, outcome, out
 
   # Rank interaction effects
   interaction_effects_df <- interaction_effects_df[order(-interaction_effects_df$Effect), ]
-  top_synergistic_interactions <- head(interaction_effects_df[interaction_effects_df$Effect > 0, ], top_n)
-  top_antagonistic_interactions <- tail(interaction_effects_df[interaction_effects_df$Effect < 0, ], top_n)
+  top_synergistic_interactions <- head(interaction_effects_df, top_n)
+  top_antagonistic_interactions <- tail(interaction_effects_df, top_n)
 
   top_synergistic_interactions$Rank <- seq(top_n)
-  top_antagonistic_interactions$Rank <- seq(top_n)
+  top_antagonistic_interactions$Rank <- rev(seq(top_n))
 
   # Return the results
   return(list(

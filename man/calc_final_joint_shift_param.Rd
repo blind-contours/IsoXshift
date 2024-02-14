@@ -8,11 +8,14 @@ calc_final_joint_shift_param(
   joint_shift_fold_results,
   rank,
   fold_k,
-  deltas_updated
+  deltas_updated,
+  exposures
 )
 }
 \arguments{
 \item{joint_shift_fold_results}{Results of the joint shift}
+
+\item{rank}{ranking of the interaction found}
 
 \item{fold_k}{Fold the joint shift is identified}
 

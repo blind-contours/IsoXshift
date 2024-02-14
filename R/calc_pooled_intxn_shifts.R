@@ -119,17 +119,15 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
       intxn_results_list[[i]] <- tmle_fit
     }
 
-    # var_names <- extract_vars_from_basis(
-    #   var_set, 1,
-    #   a_names, w_names, z_names
-    # )
-
     intxn_pooled <- calc_final_joint_shift_param(
       joint_shift_fold_results = intxn_results_list,
       rank = var_set,
       fold_k = "Pooled TMLE",
-      deltas_updated = deltas
+      deltas_updated = deltas,
+      exposures = c("Var 1","Var 2","Joint","Interaction")
     )
+
+    rownames(k_fold_results) <- NULL
 
 
     pooled_results_list[[var_set]] <- intxn_pooled
@@ -137,5 +135,5 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
   }
 
 
-  return(results_list)
+  return(list("k_fold_results" = k_fold_results_list, "pooled_results" = pooled_results_list))
 }
