@@ -43,67 +43,63 @@
 #' @importFrom sl3 make_sl3_Task Lrnr_sl
 #' @export
 
-find_synergy_antagonism <- function(data, deltas, a_names, w_names, outcome, outcome_type, mu_learner, top_n = 3, seed) {
+find_min_concentrations <- function(data, a_names, w_names, outcome, outcome_type, mu_learner, target_outcome_lvl, epsilon, seed) {
   future::plan(future::sequential, gc = TRUE)
   set.seed(seed)
 
-  # Prepare Super Learner Task with specified data, exposures, and outcome
-  task <- sl3::make_sl3_Task(
-    data = data,
-    covariates = c(a_names, w_names), # w_names assumed to be predefined
-    outcome = outcome,
-    outcome_type = outcome_type
-  )
-
-  # Train Super Learner
+  task <- sl3::make_sl3_Task(data = data, covariates = c(a_names, w_names), outcome = outcome, outcome_type = outcome_type)
   sl <- sl3::Lrnr_sl$new(learners = mu_learner)
   sl_fit <- sl$train(task)
 
-  # Initialize data frames for storing individual and interaction effects
-  individual_effects_df <- data.frame(Variable = character(), Effect = numeric(), stringsAsFactors = FALSE)
-  interaction_effects_df <- data.frame(Variable1 = character(), Variable2 = character(), Effect = numeric(), stringsAsFactors = FALSE)
+  results_df <- data.frame(
+    Variable1 = character(),
+    Variable2 = character(),
+    ObservedLevel1 = numeric(),
+    ObservedLevel2 = numeric(),
+    IntervenedLevel1 = numeric(),
+    IntervenedLevel2 = numeric(),
+    AvgDiff = numeric(),
+    Difference = numeric(),
+    stringsAsFactors = FALSE
+  )
 
-  # Calculate individual effects
-  for (var in a_names) {
-    shifted_data <- as.data.frame(data)
-    shifted_data[[var]] <- shifted_data[[var]] + deltas[[var]]
-    predictions <- sl_fit$predict(sl3::make_sl3_Task(data = shifted_data, covariates = c(a_names, w_names), outcome = outcome))
-    effect <- mean(predictions - data[[outcome]])
-    individual_effects_df <- rbind(individual_effects_df, data.frame(Variable = var, Effect = effect))
-  }
-
-  # Rank individual effects
-  individual_effects_df <- individual_effects_df[order(-individual_effects_df$Effect), ]
-  top_positive_effects <- head(individual_effects_df, top_n)
-  top_negative_effects <- tail(individual_effects_df, top_n)
-
-  top_positive_effects$Rank <- seq(top_n)
-  top_negative_effects$Rank <- rev(seq(top_n))
-
-  # Calculate interaction effects
   for (indices in combn(seq_along(a_names), 2, simplify = FALSE)) {
-    shifted_data <- as.data.frame(data)
     vars <- a_names[indices]
-    shifted_data[vars] <- shifted_data[vars] + deltas[indices]
-    joint_predictions <- sl_fit$predict(sl3::make_sl3_Task(data = shifted_data, covariates = c(a_names, w_names), outcome = outcome))
-    individual_sum <- sum(individual_effects_df$Effect[individual_effects_df$Variable %in% vars])
-    interaction_effect <- mean(data[[outcome]] - joint_predictions) - individual_sum
-    interaction_effects_df <- rbind(interaction_effects_df, data.frame(Variable1 = vars[1], Variable2 = vars[2], Effect = interaction_effect))
+
+    grid1 <- seq(min(data[[vars[1]]]), max(data[[vars[1]]]), length.out = 20)
+    grid2 <- seq(min(data[[vars[2]]]), max(data[[vars[2]]]), length.out = 20)
+
+    for (level1 in grid1) {
+      for (level2 in grid2) {
+        shifted_data <- data
+        shifted_data[[vars[1]]] <- level1
+        shifted_data[[vars[2]]] <- level2
+
+        predictions <- sl_fit$predict(sl3::make_sl3_Task(data = shifted_data, covariates = c(a_names, w_names), outcome = outcome))
+        mean_prediction <- mean(predictions)
+
+        diff <- abs(mean_prediction - target_outcome_lvl)
+
+        if (diff <= epsilon) {
+          avg_diff <- (abs(level1 - mean(data[[vars[1]]])) + abs(level2 - mean(data[[vars[2]]]))) / 2
+
+          results_df <- rbind(results_df, data.frame(
+            Variable1 = vars[1],
+            Variable2 = vars[2],
+            ObservedLevel1 = mean(data[[vars[1]]]),
+            ObservedLevel2 = mean(data[[vars[2]]]),
+            IntervenedLevel1 = level1,
+            IntervenedLevel2 = level2,
+            AvgDiff = avg_diff,
+            Difference = diff
+          ))
+        }
+      }
+    }
   }
 
-  # Rank interaction effects
-  interaction_effects_df <- interaction_effects_df[order(-interaction_effects_df$Effect), ]
-  top_synergistic_interactions <- head(interaction_effects_df, top_n)
-  top_antagonistic_interactions <- tail(interaction_effects_df, top_n)
+  results_df <- results_df[order(results_df$AvgDiff), ]
+  top_result <- head(results_df, 1)
 
-  top_synergistic_interactions$Rank <- seq(top_n)
-  top_antagonistic_interactions$Rank <- rev(seq(top_n))
-
-  # Return the results
-  return(list(
-    top_positive_effects = top_positive_effects,
-    top_negative_effects = top_negative_effects,
-    top_synergistic_interactions = top_synergistic_interactions,
-    top_antagonistic_interactions = top_antagonistic_interactions
-  ))
+  return(top_result)
 }

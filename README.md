@@ -1,18 +1,18 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift`
+# R/`IsoXshift` <img src="man/figures/IsoXshift_sticker.png" align="right" height="200" style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/blind-contours/InterXShift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
+[![R-CMD-check](https://github.com/blind-contours/IsoXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/IsoXshift/actions)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/blind-contours/InterXShift/master.svg)](https://codecov.io/github/blind-contours/InterXShift?branch=master)
-[![CRAN](https://www.r-pkg.org/badges/version/InterXShift)](https://www.r-pkg.org/pkg/InterXShift)
+Status](https://img.shields.io/codecov/c/github/blind-contours/IsoXshift/master.svg)](https://codecov.io/github/blind-contours/IsoXshift?branch=master)
+[![CRAN](https://www.r-pkg.org/badges/version/IsoXshift)](https://www.r-pkg.org/pkg/IsoXshift)
 [![CRAN
-downloads](https://cranlogs.r-pkg.org/badges/InterXShift)](https://CRAN.R-project.org/package=InterXShift)
+downloads](https://cranlogs.r-pkg.org/badges/IsoXshift)](https://CRAN.R-project.org/package=IsoXshift)
 [![CRAN total
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/InterXShift)](https://CRAN.R-project.org/package=InterXShift)
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/IsoXshift)](https://CRAN.R-project.org/package=IsoXshift)
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -22,78 +22,93 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 <!-- [![DOI](https://joss.theoj.org/papers/10.21105/joss.02447/status.svg)](https://doi.org/10.21105/joss.02447) -->
 <!-- badges: end -->
 
-> Interaction Identification and Estimation using Data-Adaptive
+> Isobolic Interaction Identification and Estimation using Data-Adaptive
 > Stochastic Interventions **Authors:** [David
 > McCoy](https://davidmccoy.org)
 
 ------------------------------------------------------------------------
 
-## What’s `InterXshift`?
+## What’s `IsoXshift`?
 
-The `InterXshift` R package offers an approach which identifies and
-estimates the impact interactions in a mixed exposure on an outcome. We
-define interaction as the counterfactual mean of the outcome under
+The `IsoXshift` R package offers an approach which identifies the
+minimum effort intervention on two exposures which, if the population
+were given these intervention levels, would result in a target outcome.
+This parameter reflects the most synergistic interaction or set of
+interactions in a mixed exposure. The target parameter is similar to
+isobolic interactions used in toxicology studies where researchers
+investigate how much simultaneous dose of two exposures results in a
+target outcome, like cancer or cell death in cultures.
+
+From a policy perspective, this parameter represents the most efficient
+intervention that can be done on a mixed exposure to get to a desired
+outcome. This is because, for a collection of possible interventions or
+changes to pollutants, for example, we find the exposure set that most
+efficiently results in an expected outcome close to our desired outcome.
+Efficient here means the exposure(s) need to be shifted the least to get
+to a desired outcome, like pre-industry levels of thyroid cancer etc.
+
+This package first identifies the most efficient intervention policy
+that gets to a desired outcome using g-computation which results in two
+exposure levels a set of exposures should be set to. Because it’s
+unrealistic to set a population to this specific oracle intervention,
+because the likelihood of certain individuals exposed to this level may
+be near 0, we instead estimate the effects of the policy if we were to
+get everyone as close as possible to this oracle level. This is done by
+finding an intervention level as close to the oracle level as possible
+under some restrictions that the individual conditional likelihood of
+being exposed doesn’t move too far away from their observed levels.
+
+We the estimate the impact of our “intention to intervene” using
+CV-TMLE. Using this oracle point paramater as our target we shift
+individuals as close as possible to this level without violating the
+density ratio, the intervention level exposure likelihood compared to
+observed level likelihood. Thus, each individuals actual intervention is
+different but is aimed towards the target, hence intention to intervene.
+
+We define interaction as the counterfactual mean of the outcome under
 stochastic interventions of two exposures compared to the additive
-counterfactual mean of the two expowures intervened on indepdentently.
+counterfactual mean of the two exposures intervened on independently.
 These interventions or exposure changes depend on naturally observed
 values, as described in past literature (Dı́az and van der Laan 2012;
-Haneuse and Rotnitzky 2013).
-
-`InterXshift` builds on work described in (McCoy et al. 2023). However
-instead of identifying interactions through an semi-parametric
-definition of an F-statistics and then estimating our interaction target
-parameter using CV-TMLE pooled across exposure sets, we provide a more
-streamlined approach. In this package, we identify interactions through
-g-computation first - evaluating the expected outcome under joint shift
-compared to the sum of individual shifts using Super Learner. We then
-rank these estimates as the highest sets of synergy and antagonism. We
-then use CV-TMLE and pool within the ranks.
-
-The package ensures robustness by employing a k-fold cross-validation
-framework. This framework helps in estimating a data-adaptive parameter,
-which is the stochastic shift target parameters for the exposure sets
-identified as having synergy or antagonism. The process begins by
-partitioning the data into parameter-generating and estimation samples.
-In the parameter-generating sample, we identify our ranks of
-antogonistic and synergistic exposure sets through a machine learning
-g-computation framework. In the estimation sample we then estimate our
-interaction target parameter using the doubly robust estimator TMLE to
-ensure asymptotic efficiency which allows us to construct confidence
-intervals for our estimates (unlike the g-comp method).
-
-By using InterXshift, users get access to a tool that offers both k-fold
-specific and aggregated results for the top synergistic and antagonistic
-relationships, ensuring that researchers can glean the most information
-from their data. For a more in-depth exploration, there’s an
-accompanying vignette.
+Haneuse and Rotnitzky 2013), but with our new parameter in mind. Thus,
+what is estimated is like asking, what the expected outcome is if we
+were to enforce the most efficient policy intervention in a realistic
+setting where not everyone can actually recieve that exact exposure
+level or levels.
 
 To utilize the package, users need to provide vectors for exposures,
-covariates, and outcomes. They also specify the respective $\delta$ for
-each exposure (indicating the degree of shift) and if this delta should
-be adaptive in response to positivity violations. The `top_n` parameter
-defines the top number of synergistic, antagonistic, positive and
-negative ranked impacts to estiamte. A detailed guide is provided in the
-vignette. With these inputs, `InterXshift` processes the data and
-delivers tables showcasing fold-specific results and aggregated
-outcomes, allowing users to glean insights effectively.
+covariates, and outcomes. They also specify the target_outcome_lvl for
+the outcome, epsilon, which is some allowed closeness to the target. For
+example, if the target outcome level is 15, and epsilon is 0.5, then
+interventions that lead to 15.5 are considered. The restriction limit is
+hn_trunc_thresh which is the allowed distance from the original exposure
+likelihood. 10 for example indicates that the likelihood should not be
+more than x10 difference from the original exposure level likelihood.
+That is, if an individual’s likelihood is originally 0.1 given their
+covariate history and the likelihood of exposure to the intervened level
+is 0.01, this is 10 times different and would be the limit intervention.
+A detailed guide is provided in the vignette. With these inputs,
+`IsoXshift` processes the data and delivers tables showcasing
+fold-specific results and aggregated outcomes, allowing users to glean
+insights effectively.
 
-`InterXshift` also incorporates features from the `sl3` package (Coyle,
+`IsoXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
 in the estimation process. If the user does not specify any stack
-parameters, `SuperNOVA` will automatically create an ensemble of machine
-learning algorithms that strike a balance between flexibility and
-computational efficiency.
+parameters, `InterXshift` will automatically create an ensemble of
+machine learning algorithms that strike a balance between flexibility
+and computational efficiency.
 
 ------------------------------------------------------------------------
 
 ## Installation
 
-*Note:* Because the `InterXshift` package (currently) depends on `sl3`
+*Note:* Because the `IsoXshift` package (currently) depends on `sl3`
 that allows ensemble machine learning to be used for nuisance parameter
-estimation and `sl3` is not on CRAN the `InterXshift` package is not
+estimation and `sl3` is not on CRAN the `IsoXshift` package is not
 available on CRAN and must be downloaded here.
 
-There are many depedencies for `InterXshift` so it’s easier to break up
+There are many depedencies for `IsoXshift` so it’s easier to break up
 installation of the various packages to ensure proper installation.
 
 First install the basis estimators used in the data-adaptive variable
@@ -104,7 +119,7 @@ install.packages("earth")
 install.packages("hal9001")
 ```
 
-`InterXshift` uses the `sl3` package to build ensemble machine learners
+`IsoXshift` uses the `sl3` package to build ensemble machine learners
 for each nuisance parameter. We have to install off the development
 branch, first download these two packages for `sl3`
 
@@ -118,13 +133,13 @@ Now install `sl3` on devel:
 remotes::install_github("tlverse/sl3@devel")
 ```
 
-Make sure `sl3` installs correctly then install `InterXshift`
+Make sure `sl3` installs correctly then install `IsoXshift`
 
 ``` r
-remotes::install_github("blind-contours/InterXshift@main")
+remotes::install_github("blind-contours/IsoXshift@main")
 ```
 
-`InterXshift` has some other miscellaneous dependencies that are used in
+`IsoXshift` has some other miscellaneous dependencies that are used in
 the examples as well as in the plotting functions.
 
 ``` r
@@ -135,19 +150,19 @@ install.packages(c("kableExtra", "hrbrthemes", "viridis"))
 
 ## Example
 
-To illustrate how `InterXshift` may be used to ascertain the effect of a
-mixed exposure, consider the following example:
+To illustrate how `IsoXshift` may be used to ascertain the effect of a
+mixed exposure, we will use synthetic data from the National Institute
+of Environmental Health. Let’s first load the relevant packages:
 
 ``` r
-library(InterXshift)
+library(IsoXshift)
 library(devtools)
 #> Loading required package: usethis
 library(kableExtra)
 library(sl3)
 
-set.seed(429153)
-# simulate simple data
-n_obs <- 10000
+seed <- 429153
+set.seed(seed)
 ```
 
 We will directly use synthetic data from the NIEHS used to test new
@@ -156,7 +171,7 @@ marginal effects and certain interactions. Found here:
 <https://github.com/niehs-prime/2015-NIEHS-MIxtures-Workshop>
 
 ``` r
-data("NIEHS_data_1", package = "SuperNOVA")
+data("NIEHS_data_1", package = "IsoXshift")
 ```
 
 ``` r
@@ -165,10 +180,6 @@ w <- NIEHS_data_1[, c("W", "Z")]
 a <- NIEHS_data_1[, c("X1", "X2", "X3", "X4", "X5", "X6", "X7")]
 y <- NIEHS_data_1$Y
 
-deltas <- list(
-  "X1" = 1, "X2" = 1, "X3" = 1,
-  "X4" = 1, "X5" = 1, "X6" = 1, "X7" = 1
-)
 head(NIEHS_data_1) %>%
   kbl(caption = "NIEHS Data") %>%
   kable_classic(full_width = F, html_font = "Cambria")
@@ -429,671 +440,122 @@ W
 </tbody>
 </table>
 
-Based on the data key, we expect X1 to have the strongest positive
-effect, X5 the strongest negative. So we would expect these to take the
-top ranks for these marginal associations. For interactions
+Let’s look at the interactions built into this synthetic data:
+
+<figure>
+<img src="%22man/figures/NIEHS_interactions.png%22"
+alt="NIEHS Interactions" />
+<figcaption aria-hidden="true">NIEHS Interactions</figcaption>
+</figure>
+
+This shows that X1 and X7 has the most synergy or super-additive effect
+so we might expect to find this relationship as the most synergistic
+exposure relationship based on our definition.
 
 ``` r
 
 ptm <- proc.time()
-sim_results <- InterXshift(
+sim_results <- IsoXshift(
   w = w,
   a = a,
   y = y,
-  delta = deltas,
-  n_folds = 3,
+  n_folds = 5,
   num_cores = 6,
   outcome_type = "continuous",
-  seed = 294580,
-  top_n = 2
+  seed = seed,
+  target_outcome_lvl = 15,
+  epsilon = 0.5
 )
 #> 
-#> Iter: 1 fn: 207.8441  Pars:  0.24716 0.75284
-#> Iter: 2 fn: 207.8441  Pars:  0.24716 0.75284
+#> Iter: 1 fn: 191.9358  Pars:  0.0000003908 0.9999996094
+#> Iter: 2 fn: 191.9358  Pars:  0.0000001602 0.9999998398
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 377.5727  Pars:  0.15499 0.84501
-#> Iter: 2 fn: 377.5727  Pars:  0.15499 0.84501
+#> Iter: 1 fn: 448.1996  Pars:  0.03804 0.96196
+#> Iter: 2 fn: 448.1996  Pars:  0.03804 0.96196
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 330.3357  Pars:  0.0000008108 0.9999991895
-#> Iter: 2 fn: 330.3357  Pars:  0.0000003246 0.9999996754
+#> Iter: 1 fn: 461.3076  Pars:  0.22580 0.77420
+#> Iter: 2 fn: 461.3076  Pars:  0.22580 0.77420
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 401.8556  Pars:  0.86134 0.13866
-#> Iter: 2 fn: 401.8556  Pars:  0.86138 0.13862
+#> Iter: 1 fn: 180.8586  Pars:  0.02992 0.97008
+#> Iter: 2 fn: 180.8586  Pars:  0.02991 0.97009
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 332.3736  Pars:  0.0000004115 0.9999995885
-#> Iter: 2 fn: 332.3736  Pars:  0.0000002689 0.9999997311
+#> Iter: 1 fn: 466.2345  Pars:  0.003087 0.996913
+#> Iter: 2 fn: 466.2345  Pars:  0.002355 0.997645
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 397.6163  Pars:  0.99999899 0.00000101
-#> Iter: 2 fn: 397.6163  Pars:  0.9999993431 0.0000006569
+#> Iter: 1 fn: 464.6877  Pars:  0.999994892 0.000005108
+#> Iter: 2 fn: 464.6877  Pars:  0.999998399 0.000001601
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 401.6642  Pars:  0.34162 0.65838
-#> Iter: 2 fn: 401.6642  Pars:  0.34162 0.65838
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 394.7229  Pars:  0.999996612 0.000003388
-#> Iter: 2 fn: 394.7229  Pars:  0.9999992222 0.0000007778
-#> Iter: 3 fn: 394.7229  Pars:  0.9999996471 0.0000003529
+#> Iter: 1 fn: 199.3252  Pars:  0.00000004247 0.99999995594
+#> Iter: 2 fn: 199.3252  Pars:  0.0000000009188 0.9999999990812
+#> Iter: 3 fn: 199.3252  Pars:  0.0000000005678 0.9999999994322
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 356.1339  Pars:  0.000005701 0.999994299
-#> Iter: 2 fn: 356.1339  Pars:  0.000002949 0.999997051
+#> Iter: 1 fn: 453.2732  Pars:  0.06791 0.93209
+#> Iter: 2 fn: 453.2732  Pars:  0.06788 0.93212
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 266.7341  Pars:  0.05148 0.94852
-#> Iter: 2 fn: 266.7341  Pars:  0.05148 0.94852
+#> Iter: 1 fn: 451.6012  Pars:  0.05533 0.94467
+#> Iter: 2 fn: 451.6012  Pars:  0.05532 0.94468
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 333.6510  Pars:  0.00000144 0.99999856
-#> Iter: 2 fn: 333.6510  Pars:  0.0000008037 0.9999991963
+#> Iter: 1 fn: 222.6728  Pars:  0.000000003476 0.999999995710
+#> Iter: 2 fn: 222.6728  Pars:  0.000000002283 0.999999997717
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 400.0847  Pars:  0.999997174 0.000002826
-#> Iter: 2 fn: 400.0847  Pars:  0.999998661 0.000001339
+#> Iter: 1 fn: 453.2119  Pars:  0.12281 0.87719
+#> Iter: 2 fn: 453.2119  Pars:  0.12282 0.87718
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 404.9955  Pars:  0.000001765 0.999998235
-#> Iter: 2 fn: 404.9955  Pars:  0.0000005755 0.9999994245
+#> Iter: 1 fn: 459.0837  Pars:  0.40415 0.59585
+#> Iter: 2 fn: 459.0837  Pars:  0.40415 0.59585
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 398.2493  Pars:  0.91734 0.08266
-#> Iter: 2 fn: 398.2493  Pars:  0.91734 0.08266
+#> Iter: 1 fn: 224.4303  Pars:  0.05369 0.94631
+#> Iter: 2 fn: 224.4303  Pars:  0.05369 0.94631
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 357.3580  Pars:  0.73183 0.26817
-#> Iter: 2 fn: 357.3580  Pars:  0.73184 0.26816
+#> Iter: 1 fn: 484.9169  Pars:  0.37866 0.62134
+#> Iter: 2 fn: 484.9169  Pars:  0.37866 0.62134
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 273.0408  Pars:  0.05909 0.94091
-#> Iter: 2 fn: 273.0408  Pars:  0.05909 0.94091
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 183.0370  Pars:  0.01430 0.98570
-#> Iter: 2 fn: 183.0370  Pars:  0.01430 0.98570
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 368.3078  Pars:  0.28787 0.71213
-#> Iter: 2 fn: 368.3078  Pars:  0.28787 0.71213
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 339.4673  Pars:  0.31384 0.68616
-#> Iter: 2 fn: 339.4673  Pars:  0.31385 0.68615
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 383.2973  Pars:  0.09198 0.90802
-#> Iter: 2 fn: 383.2973  Pars:  0.09198 0.90802
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 340.5352  Pars:  0.72757 0.27243
-#> Iter: 2 fn: 340.5352  Pars:  0.72757 0.27243
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 391.8501  Pars:  0.20653 0.79347
-#> Iter: 2 fn: 391.8501  Pars:  0.20653 0.79347
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 393.0514  Pars:  0.41725 0.58275
-#> Iter: 2 fn: 393.0514  Pars:  0.41724 0.58276
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 385.7589  Pars:  0.23439 0.76561
-#> Iter: 2 fn: 385.7589  Pars:  0.23439 0.76561
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 359.8025  Pars:  0.64588 0.35412
-#> Iter: 2 fn: 359.8025  Pars:  0.64589 0.35411
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 298.1049  Pars:  0.13593 0.86407
-#> Iter: 2 fn: 298.1049  Pars:  0.13593 0.86407
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 343.2012  Pars:  0.69630 0.30370
-#> Iter: 2 fn: 343.2012  Pars:  0.69631 0.30369
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 387.6236  Pars:  0.26685 0.73315
-#> Iter: 2 fn: 387.6236  Pars:  0.26685 0.73315
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 382.9423  Pars:  0.38852 0.61148
-#> Iter: 2 fn: 382.9423  Pars:  0.38852 0.61148
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 386.7048  Pars:  0.26779 0.73221
-#> Iter: 2 fn: 386.7048  Pars:  0.26780 0.73220
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 358.5122  Pars:  0.81840 0.18160
-#> Iter: 2 fn: 358.5122  Pars:  0.81843 0.18157
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 299.7883  Pars:  0.18540 0.81460
-#> Iter: 2 fn: 299.7883  Pars:  0.18540 0.81460
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 175.6340  Pars:  0.0000000298 0.9999999697
-#> Iter: 2 fn: 175.6340  Pars:  0.000000002366 0.999999997634
-#> Iter: 3 fn: 175.6340  Pars:  0.000000001002 0.999999998998
-#> solnp--> Completed in 3 iterations
-#> 
-#> Iter: 1 fn: 390.2291  Pars:  0.10353 0.89647
-#> Iter: 2 fn: 390.2291  Pars:  0.10353 0.89647
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 345.9065  Pars:  0.0000001012 0.9999998989
-#> Iter: 2 fn: 345.9065  Pars:  0.00000006067 0.99999993933
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 400.4320  Pars:  0.04147 0.95853
-#> Iter: 2 fn: 400.4320  Pars:  0.04141 0.95859
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 350.7453  Pars:  0.07386 0.92614
-#> Iter: 2 fn: 350.7453  Pars:  0.07386 0.92614
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 399.6946  Pars:  0.72024 0.27976
-#> Iter: 2 fn: 399.6854  Pars:  0.994207 0.005793
-#> Iter: 3 fn: 399.6853  Pars:  0.9997299 0.0002701
-#> Iter: 4 fn: 399.6853  Pars:  0.999892 0.000108
-#> solnp--> Completed in 4 iterations
-#> 
-#> Iter: 1 fn: 401.3928  Pars:  0.87583 0.12417
-#> Iter: 2 fn: 401.3928  Pars:  0.87590 0.12410
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 402.8578  Pars:  0.000699 0.999301
-#> Iter: 2 fn: 398.8164  Pars:  0.999998775 0.000001225
-#> Iter: 3 fn: 398.8164  Pars:  0.9999997522 0.0000002478
-#> solnp--> Completed in 3 iterations
-#> 
-#> Iter: 1 fn: 351.1701  Pars:  0.33886 0.66114
-#> Iter: 2 fn: 351.1701  Pars:  0.33886 0.66114
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 263.4308  Pars:  0.10274 0.89726
-#> Iter: 2 fn: 263.4308  Pars:  0.10275 0.89725
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 349.1731  Pars:  0.09060 0.90940
-#> Iter: 2 fn: 349.1731  Pars:  0.09060 0.90940
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 398.4919  Pars:  0.12241 0.87759
-#> Iter: 2 fn: 398.4902  Pars:  0.21590 0.78410
-#> Iter: 3 fn: 398.4902  Pars:  0.21590 0.78410
-#> solnp--> Completed in 3 iterations
-#> 
-#> Iter: 1 fn: 406.4360  Pars:  0.76833 0.23167
-#> Iter: 2 fn: 406.4360  Pars:  0.76833 0.23167
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 403.4659  Pars:  0.90911 0.09089
-#> Iter: 2 fn: 403.4659  Pars:  0.90972 0.09028
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 349.7103  Pars:  0.000002336 0.999997663
-#> Iter: 2 fn: 349.7103  Pars:  0.0000002178 0.9999997822
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 261.9160  Pars:  0.000002122 0.999997879
-#> Iter: 2 fn: 261.9160  Pars:  0.0000004885 0.9999995115
+#> Iter: 1 fn: 488.1615  Pars:  0.99999415 0.00000585
+#> Iter: 2 fn: 488.1614  Pars:  0.9999997443 0.0000002557
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
-#>     user   system  elapsed 
-#>   76.950    4.150 1362.112
+#>    user  system elapsed 
+#>  61.051   3.082 920.514
 
-## marginal effects
-top_positive_effects <- sim_results$`Pos Shift Results`
-top_negative_effects <- sim_results$`Neg Shift Results`
-
-## interaction effects
-pooled_synergy_effects <- sim_results$`Pooled Synergy Results`
-pooled_antagonism_effects <- sim_results$`Pooled Antagonism Results`
-
-k_fold_synergy_effects <- sim_results$`K Fold Synergy Results`
-k_fold_antagonism_effects <- sim_results$`K Fold Antagonism Results`
+oracle_parameter <- sim_results$`Oracle Pooled Results`
+k_fold_results <- sim_results$`K-fold Results`
+oracle_targets <- sim_results$`K Fold Oracle Targets`
 ```
 
-``` r
-top_positive_effects %>%
-  kbl(caption = "Rank 1 Positive Stochastic Intervention Results") %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
+Of note: these results will be more consistent with higher folds but
+here we use 5 so readme builds more quickly for users.
 
-<table class="kable_wrapper lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-Rank 1 Positive Stochastic Intervention Results
-</caption>
-<tbody>
-<tr>
-<td>
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:left;">
-Type
-</th>
-<th style="text-align:left;">
-Variables
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
-13.272347
-</td>
-<td style="text-align:right;">
-0.4610176
-</td>
-<td style="text-align:right;">
-0.6789827
-</td>
-<td style="text-align:right;">
-11.9416
-</td>
-<td style="text-align:right;">
-14.6031
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
--2.687271
-</td>
-<td style="text-align:right;">
-1.6059094
-</td>
-<td style="text-align:right;">
-1.2672448
-</td>
-<td style="text-align:right;">
--5.1710
-</td>
-<td style="text-align:right;">
--0.2035
-</td>
-<td style="text-align:right;">
-0.0339587
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
-15.980403
-</td>
-<td style="text-align:right;">
-0.6346225
-</td>
-<td style="text-align:right;">
-0.7966320
-</td>
-<td style="text-align:right;">
-14.4190
-</td>
-<td style="text-align:right;">
-17.5418
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rank 1
-</td>
-<td style="text-align:right;">
-14.366549
-</td>
-<td style="text-align:right;">
-0.2866767
-</td>
-<td style="text-align:right;">
-0.5354220
-</td>
-<td style="text-align:right;">
-13.3171
-</td>
-<td style="text-align:right;">
-15.4160
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-Rank 1
-</td>
-<td style="text-align:right;">
-500
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-<td>
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:left;">
-Type
-</th>
-<th style="text-align:left;">
-Variables
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-3.418538
-</td>
-<td style="text-align:right;">
-0.7348417
-</td>
-<td style="text-align:right;">
-0.8572291
-</td>
-<td style="text-align:right;">
-1.7384
-</td>
-<td style="text-align:right;">
-5.0987
-</td>
-<td style="text-align:right;">
-0.0000667
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-2.716254
-</td>
-<td style="text-align:right;">
-0.7413940
-</td>
-<td style="text-align:right;">
-0.8610424
-</td>
-<td style="text-align:right;">
-1.0286
-</td>
-<td style="text-align:right;">
-4.4039
-</td>
-<td style="text-align:right;">
-0.0016071
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-2.879122
-</td>
-<td style="text-align:right;">
-0.5118995
-</td>
-<td style="text-align:right;">
-0.7154715
-</td>
-<td style="text-align:right;">
-1.4768
-</td>
-<td style="text-align:right;">
-4.2814
-</td>
-<td style="text-align:right;">
-0.0000572
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rank 2
-</td>
-<td style="text-align:right;">
-3.138611
-</td>
-<td style="text-align:right;">
-0.2468434
-</td>
-<td style="text-align:right;">
-0.4968334
-</td>
-<td style="text-align:right;">
-2.1648
-</td>
-<td style="text-align:right;">
-4.1124
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-Rank 2
-</td>
-<td style="text-align:right;">
-500
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-</tbody>
-</table>
-
-Above we show the findings for the top rank positive marginal effect.
-Here we consistently find X1 which is true based on what is built into
-the DGP.
-
-Next we look at the top negative result:
+Let’s first look at K fold results:
 
 ``` r
-top_negative_effects$`Rank 1` %>%
-  kbl(caption = "Rank 1 Negative Stochastic Intervention Results") %>%
+k_fold_results <- do.call(rbind, k_fold_results)
+rownames(k_fold_results) <- NULL
+
+k_fold_results %>%
+  kbl(caption = "List of K Fold Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
 <table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
-Rank 1 Negative Stochastic Intervention Results
+List of K Fold Results
 </caption>
 <thead>
 <tr>
-<th style="text-align:left;">
-Condition
-</th>
 <th style="text-align:right;">
 Psi
 </th>
@@ -1112,202 +574,819 @@ Upper CI
 <th style="text-align:right;">
 P-value
 </th>
-<th style="text-align:left;">
-Fold
+<th style="text-align:right;">
+N
 </th>
 <th style="text-align:left;">
 Type
 </th>
-<th style="text-align:left;">
-Variables
-</th>
 <th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
+Fold
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-X4
+<td style="text-align:right;">
+-7.7985083
 </td>
 <td style="text-align:right;">
--0.8445876
+0.3650333
 </td>
 <td style="text-align:right;">
-0.7361409
+0.6041799
 </td>
 <td style="text-align:right;">
-0.8579865
+-8.9827
 </td>
 <td style="text-align:right;">
--2.5262
+-6.6143
 </td>
 <td style="text-align:right;">
-0.8370
+0.0000000
 </td>
 <td style="text-align:right;">
-0.3249271
-</td>
-<td style="text-align:left;">
-1
+100
 </td>
 <td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X4
-</td>
-<td style="text-align:right;">
-167
+X1
 </td>
 <td style="text-align:right;">
 1
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+-5.3648883
+</td>
+<td style="text-align:right;">
+0.5524979
+</td>
+<td style="text-align:right;">
+0.7433020
+</td>
+<td style="text-align:right;">
+-6.8217
+</td>
+<td style="text-align:right;">
+-3.9080
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+100
+</td>
 <td style="text-align:left;">
-X4
+X7
 </td>
 <td style="text-align:right;">
--0.6088896
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-12.4305447
 </td>
 <td style="text-align:right;">
-0.7229439
+0.2108756
 </td>
 <td style="text-align:right;">
-0.8502611
+0.4592119
 </td>
 <td style="text-align:right;">
--2.2754
+-13.3306
 </td>
 <td style="text-align:right;">
-1.0576
+-11.5305
 </td>
 <td style="text-align:right;">
-0.4739168
+0.0000000
+</td>
+<td style="text-align:right;">
+100
 </td>
 <td style="text-align:left;">
+X1-X7
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.7328519
+</td>
+<td style="text-align:right;">
+0.9416103
+</td>
+<td style="text-align:right;">
+0.9703661
+</td>
+<td style="text-align:right;">
+-1.1690
+</td>
+<td style="text-align:right;">
+2.6347
+</td>
+<td style="text-align:right;">
+0.4569019
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1.5574047
+</td>
+<td style="text-align:right;">
+0.7113273
+</td>
+<td style="text-align:right;">
+0.8434022
+</td>
+<td style="text-align:right;">
+-0.0956
+</td>
+<td style="text-align:right;">
+3.2104
+</td>
+<td style="text-align:right;">
+0.0899167
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:right;">
 2
 </td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X4
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.1970893
 </td>
 <td style="text-align:right;">
-167
+0.5760383
 </td>
 <td style="text-align:right;">
-1
+0.7589719
+</td>
+<td style="text-align:right;">
+-1.6846
+</td>
+<td style="text-align:right;">
+1.2905
+</td>
+<td style="text-align:right;">
+0.8210225
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+2
 </td>
 </tr>
 <tr>
+<td style="text-align:right;">
+5.6273123
+</td>
+<td style="text-align:right;">
+1.2451360
+</td>
+<td style="text-align:right;">
+1.1158566
+</td>
+<td style="text-align:right;">
+3.4403
+</td>
+<td style="text-align:right;">
+7.8144
+</td>
+<td style="text-align:right;">
+0.0000001
+</td>
+<td style="text-align:right;">
+100
+</td>
 <td style="text-align:left;">
-X4
+X1-X5
 </td>
 <td style="text-align:right;">
--0.4510666
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4.2669968
 </td>
 <td style="text-align:right;">
-0.5543036
+0.7166617
 </td>
 <td style="text-align:right;">
-0.7445157
+0.8465587
 </td>
 <td style="text-align:right;">
--1.9103
+2.6078
 </td>
 <td style="text-align:right;">
-1.0082
+5.9262
 </td>
 <td style="text-align:right;">
-0.5446128
+0.0000035
+</td>
+<td style="text-align:right;">
+100
 </td>
 <td style="text-align:left;">
+Interaction
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-3.4628004
+</td>
+<td style="text-align:right;">
+0.2162710
+</td>
+<td style="text-align:right;">
+0.4650495
+</td>
+<td style="text-align:right;">
+-4.3743
+</td>
+<td style="text-align:right;">
+-2.5513
+</td>
+<td style="text-align:right;">
+0.0000004
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:right;">
 3
 </td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X4
+</tr>
+<tr>
+<td style="text-align:right;">
+-4.2561526
 </td>
 <td style="text-align:right;">
-166
+0.3320851
 </td>
 <td style="text-align:right;">
-1
+0.5762682
+</td>
+<td style="text-align:right;">
+-5.3856
+</td>
+<td style="text-align:right;">
+-3.1267
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X7
+</td>
+<td style="text-align:right;">
+3
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Rank 1
+<td style="text-align:right;">
+-8.7301492
 </td>
 <td style="text-align:right;">
--0.7797371
+0.1102324
 </td>
 <td style="text-align:right;">
-0.2457405
+0.3320127
 </td>
 <td style="text-align:right;">
-0.4957222
+-9.3809
 </td>
 <td style="text-align:right;">
--1.7513
+-8.0794
 </td>
 <td style="text-align:right;">
-0.1919
+0.0000000
 </td>
 <td style="text-align:right;">
-0.1157346
-</td>
-<td style="text-align:left;">
-Pooled TMLE
+100
 </td>
 <td style="text-align:left;">
-Indiv Shift
+X1-X7
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-1.0111963
+</td>
+<td style="text-align:right;">
+0.6838574
+</td>
+<td style="text-align:right;">
+0.8269567
+</td>
+<td style="text-align:right;">
+-2.6320
+</td>
+<td style="text-align:right;">
+0.6096
+</td>
+<td style="text-align:right;">
+0.2661499
+</td>
+<td style="text-align:right;">
+100
 </td>
 <td style="text-align:left;">
-Rank 1
+Interaction
 </td>
 <td style="text-align:right;">
-500
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-1.4784270
 </td>
 <td style="text-align:right;">
-1
+0.2494608
+</td>
+<td style="text-align:right;">
+0.4994605
+</td>
+<td style="text-align:right;">
+-2.4574
+</td>
+<td style="text-align:right;">
+-0.4995
+</td>
+<td style="text-align:right;">
+0.0364438
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-3.8400742
+</td>
+<td style="text-align:right;">
+0.6397796
+</td>
+<td style="text-align:right;">
+0.7998622
+</td>
+<td style="text-align:right;">
+-5.4078
+</td>
+<td style="text-align:right;">
+-2.2724
+</td>
+<td style="text-align:right;">
+0.0000176
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X7
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-4.7133492
+</td>
+<td style="text-align:right;">
+0.4546646
+</td>
+<td style="text-align:right;">
+0.6742882
+</td>
+<td style="text-align:right;">
+-6.0349
+</td>
+<td style="text-align:right;">
+-3.3918
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1-X7
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.6051520
+</td>
+<td style="text-align:right;">
+0.5220826
+</td>
+<td style="text-align:right;">
+0.7225528
+</td>
+<td style="text-align:right;">
+-0.8110
+</td>
+<td style="text-align:right;">
+2.0213
+</td>
+<td style="text-align:right;">
+0.4765158
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.7227610
+</td>
+<td style="text-align:right;">
+0.9085103
+</td>
+<td style="text-align:right;">
+0.9531581
+</td>
+<td style="text-align:right;">
+-1.1454
+</td>
+<td style="text-align:right;">
+2.5909
+</td>
+<td style="text-align:right;">
+0.4591133
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-1.1737772
+</td>
+<td style="text-align:right;">
+1.1133541
+</td>
+<td style="text-align:right;">
+1.0551560
+</td>
+<td style="text-align:right;">
+-3.2418
+</td>
+<td style="text-align:right;">
+0.8943
+</td>
+<td style="text-align:right;">
+0.2531685
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-0.1053973
+</td>
+<td style="text-align:right;">
+0.9655426
+</td>
+<td style="text-align:right;">
+0.9826203
+</td>
+<td style="text-align:right;">
+-2.0313
+</td>
+<td style="text-align:right;">
+1.8205
+</td>
+<td style="text-align:right;">
+0.9153243
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+X1-X5
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.3456190
+</td>
+<td style="text-align:right;">
+1.4373164
+</td>
+<td style="text-align:right;">
+1.1988813
+</td>
+<td style="text-align:right;">
+-2.0041
+</td>
+<td style="text-align:right;">
+2.6954
+</td>
+<td style="text-align:right;">
+0.7522662
+</td>
+<td style="text-align:right;">
+100
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+<td style="text-align:right;">
+5
 </td>
 </tr>
 </tbody>
 </table>
 
-Here we consistently see X5 as having the strongest negative impact
-which is also true compared to the true DGP.
-
-Next we will look at the top synergy results which is defined as the
-exposures that when shifted jointly have the highest, most positive,
-expected outcome difference compared to the sum of individual shifts of
-the same variables.
+Here we see that X1-X7 are found in 3 folds and X1-X5 are found in two
+folds as the most synergistic relationship. This means that, to get to
+our target outcome of 15, with precision up to 0.5, these two exposures
+are found to most efficiently get to our target outcome under minimal
+intervention. These interventions are:
 
 ``` r
-pooled_synergy_effects$`Rank 1` %>%
-  kbl(caption = "Rank 1 Synergy Stochastic Intervention Results") %>%
+oracle_targets <- do.call(rbind, oracle_targets)
+oracle_targets %>%
+  kbl(caption = "Oracle Targets") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
 <table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
-Rank 1 Synergy Stochastic Intervention Results
+Oracle Targets
 </caption>
 <thead>
 <tr>
 <th style="text-align:left;">
-Rank
 </th>
+<th style="text-align:left;">
+Variable1
+</th>
+<th style="text-align:left;">
+Variable2
+</th>
+<th style="text-align:right;">
+ObservedLevel1
+</th>
+<th style="text-align:right;">
+ObservedLevel2
+</th>
+<th style="text-align:right;">
+IntervenedLevel1
+</th>
+<th style="text-align:right;">
+IntervenedLevel2
+</th>
+<th style="text-align:right;">
+AvgDiff
+</th>
+<th style="text-align:right;">
+Difference
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X7
+</td>
+<td style="text-align:right;">
+1.127339
+</td>
+<td style="text-align:right;">
+1.126352
+</td>
+<td style="text-align:right;">
+0.7604973
+</td>
+<td style="text-align:right;">
+0.0426858
+</td>
+<td style="text-align:right;">
+0.7252537
+</td>
+<td style="text-align:right;">
+0.1637156
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+1.175058
+</td>
+<td style="text-align:right;">
+1.214526
+</td>
+<td style="text-align:right;">
+0.0481946
+</td>
+<td style="text-align:right;">
+1.7690362
+</td>
+<td style="text-align:right;">
+0.8406866
+</td>
+<td style="text-align:right;">
+0.1274489
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+13
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X7
+</td>
+<td style="text-align:right;">
+1.124548
+</td>
+<td style="text-align:right;">
+1.143164
+</td>
+<td style="text-align:right;">
+0.7877847
+</td>
+<td style="text-align:right;">
+0.0426858
+</td>
+<td style="text-align:right;">
+0.7186205
+</td>
+<td style="text-align:right;">
+0.2180422
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X7
+</td>
+<td style="text-align:right;">
+1.158695
+</td>
+<td style="text-align:right;">
+1.120035
+</td>
+<td style="text-align:right;">
+0.7806664
+</td>
+<td style="text-align:right;">
+0.0426858
+</td>
+<td style="text-align:right;">
+0.7276892
+</td>
+<td style="text-align:right;">
+0.1428271
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+1.124724
+</td>
+<td style="text-align:right;">
+1.266117
+</td>
+<td style="text-align:right;">
+0.0481946
+</td>
+<td style="text-align:right;">
+1.3438657
+</td>
+<td style="text-align:right;">
+0.5771388
+</td>
+<td style="text-align:right;">
+0.3894339
+</td>
+</tr>
+</tbody>
+</table>
+
+Here this table shows the average exposed level for each exposure, the
+intervened level for both exposures, this is the level the exposures are
+set to which gets to the target outcome most efficiently, Avg
+Difference, is the average difference between the intervention and
+observed outcome (the “effort”), and Difference is the difference
+between the expected outcome under intervention and the target outcome.
+
+To get more power, we do a pooled TMLE over our findings for the
+intervention with minimal effort that gets to our target outcome:
+
+``` r
+oracle_parameter %>%
+  kbl(caption = "Pooled Oracle Parameter") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Pooled Oracle Parameter
+</caption>
+<thead>
+<tr>
 <th style="text-align:right;">
 Psi
 </th>
@@ -1326,1234 +1405,168 @@ Upper CI
 <th style="text-align:right;">
 P-value
 </th>
-<th style="text-align:left;">
-Fold
-</th>
 <th style="text-align:right;">
 N
 </th>
-<th style="text-align:right;">
-Delta Exposure 1
-</th>
-<th style="text-align:right;">
-Delta Exposure 2
-</th>
 <th style="text-align:left;">
 Type
+</th>
+<th style="text-align:left;">
+Fold
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-Rank 1
+<td style="text-align:right;">
+-3.5934354
 </td>
 <td style="text-align:right;">
--0.7839407
+0.0927634
 </td>
 <td style="text-align:right;">
-0.2439296
+0.3045709
 </td>
 <td style="text-align:right;">
-0.4938923
+-4.1904
 </td>
 <td style="text-align:right;">
--1.7520
+-2.9965
 </td>
 <td style="text-align:right;">
-0.1841
-</td>
-<td style="text-align:right;">
-0.2646390
-</td>
-<td style="text-align:left;">
-Pooled TMLE
+0.0000000
 </td>
 <td style="text-align:right;">
 500
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
 </td>
 <td style="text-align:left;">
 Var 1
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rank 1
-</td>
-<td style="text-align:right;">
--3.5652153
-</td>
-<td style="text-align:right;">
-0.2374525
-</td>
-<td style="text-align:right;">
-0.4872909
-</td>
-<td style="text-align:right;">
--4.5203
-</td>
-<td style="text-align:right;">
--2.6101
-</td>
-<td style="text-align:right;">
-0.0000003
-</td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-3.5312376
+</td>
+<td style="text-align:right;">
+0.1847595
+</td>
+<td style="text-align:right;">
+0.4298366
+</td>
+<td style="text-align:right;">
+-4.3737
+</td>
+<td style="text-align:right;">
+-2.6888
+</td>
+<td style="text-align:right;">
+0.0000001
+</td>
 <td style="text-align:right;">
 500
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
 </td>
 <td style="text-align:left;">
 Var 2
 </td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-Rank 1
+<td style="text-align:right;">
+-7.0006181
 </td>
 <td style="text-align:right;">
--4.0194749
+0.0668611
 </td>
 <td style="text-align:right;">
-0.2484014
+0.2585751
 </td>
 <td style="text-align:right;">
-0.4983989
+-7.5074
 </td>
 <td style="text-align:right;">
--4.9963
-</td>
-<td style="text-align:right;">
--3.0426
+-6.4938
 </td>
 <td style="text-align:right;">
 0.0000000
 </td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
 <td style="text-align:right;">
 500
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
 </td>
 <td style="text-align:left;">
 Joint
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rank 1
-</td>
-<td style="text-align:right;">
-0.3296811
-</td>
-<td style="text-align:right;">
-0.2511571
-</td>
-<td style="text-align:right;">
-0.5011557
-</td>
-<td style="text-align:right;">
--0.6526
-</td>
-<td style="text-align:right;">
-1.3119
-</td>
-<td style="text-align:right;">
-0.6414291
-</td>
 <td style="text-align:left;">
 Pooled TMLE
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0.1240548
+</td>
+<td style="text-align:right;">
+0.2169933
+</td>
+<td style="text-align:right;">
+0.4658254
+</td>
+<td style="text-align:right;">
+-0.7889
+</td>
+<td style="text-align:right;">
+1.0371
+</td>
+<td style="text-align:right;">
+0.8557698
 </td>
 <td style="text-align:right;">
 500
 </td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
 <td style="text-align:left;">
 Interaction
+</td>
+<td style="text-align:left;">
+Pooled TMLE
 </td>
 </tr>
 </tbody>
 </table>
 
-Above this table shows the pooled results for the rank 1 synergy
-exposure interaction. Of course, the exposure sets in the interaction
-deemed to have the highest impact, synergy, may differ between the folds
-and thus this pooling may be over different exposure sets. Thus, the
-first line shows the pooled estimate for a shift in the first variable,
-the second line the second variable, third line the joint and fourth
-line the difference between the joint and sum of the first two lines, or
-the interaction effect. Therefore, in this case, we could be pooling
-over different variables because of inconcistency in what is included as
-rank 1 between the folds. Next we look at the k-fold specific results.
+This gives pooled estimates for the shift of each variable in the
+relationship individually, joint and our definition of interaction
+comparing the expectation of the outcome under joint shift compared to
+the expectations under the sum of individual shifts. Of course, given
+inconsistencies in our findings here, the interpretation is difficult
+given these findings include shifts for both sets of variables X1-X7 and
+X1-X5.
 
-``` r
-k_fold_synergy_effects$`Rank 1` %>%
-  kbl(caption = "K-fold Synergy Stochastic Intervention Results") %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
+However, when IsoXshift is run with more folds, findings have more
+consistency and the pooled result represents a pooled estimate for the
+same exposure relationship.
 
-<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-K-fold Synergy Stochastic Intervention Results
-</caption>
-<thead>
-<tr>
-<th style="text-align:right;">
-Rank
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:right;">
-Fold
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta Exposure 1
-</th>
-<th style="text-align:right;">
-Delta Exposure 2
-</th>
-<th style="text-align:left;">
-Type
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.8307433
-</td>
-<td style="text-align:right;">
-0.7422102
-</td>
-<td style="text-align:right;">
-0.8615162
-</td>
-<td style="text-align:right;">
--2.5193
-</td>
-<td style="text-align:right;">
-0.8578
-</td>
-<td style="text-align:right;">
-0.3707738
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.6842524
-</td>
-<td style="text-align:right;">
-0.6854063
-</td>
-<td style="text-align:right;">
-0.8278927
-</td>
-<td style="text-align:right;">
--5.3069
-</td>
-<td style="text-align:right;">
--2.0616
-</td>
-<td style="text-align:right;">
-0.0000514
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.8745306
-</td>
-<td style="text-align:right;">
-0.6396612
-</td>
-<td style="text-align:right;">
-0.7997882
-</td>
-<td style="text-align:right;">
--5.4421
-</td>
-<td style="text-align:right;">
--2.3070
-</td>
-<td style="text-align:right;">
-0.0000147
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.6404651
-</td>
-<td style="text-align:right;">
-0.8229767
-</td>
-<td style="text-align:right;">
-0.9071806
-</td>
-<td style="text-align:right;">
--1.1376
-</td>
-<td style="text-align:right;">
-2.4185
-</td>
-<td style="text-align:right;">
-0.5013085
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.6414818
-</td>
-<td style="text-align:right;">
-0.7115233
-</td>
-<td style="text-align:right;">
-0.8435184
-</td>
-<td style="text-align:right;">
--2.2947
-</td>
-<td style="text-align:right;">
-1.0118
-</td>
-<td style="text-align:right;">
-0.4848941
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.8106050
-</td>
-<td style="text-align:right;">
-0.7023745
-</td>
-<td style="text-align:right;">
-0.8380779
-</td>
-<td style="text-align:right;">
--5.4532
-</td>
-<td style="text-align:right;">
--2.1680
-</td>
-<td style="text-align:right;">
-0.0000315
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.9552472
-</td>
-<td style="text-align:right;">
-1.0958593
-</td>
-<td style="text-align:right;">
-1.0468330
-</td>
-<td style="text-align:right;">
--6.0070
-</td>
-<td style="text-align:right;">
--1.9035
-</td>
-<td style="text-align:right;">
-0.0001107
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.4968396
-</td>
-<td style="text-align:right;">
-1.0111131
-</td>
-<td style="text-align:right;">
-1.0055412
-</td>
-<td style="text-align:right;">
--1.4740
-</td>
-<td style="text-align:right;">
-2.4677
-</td>
-<td style="text-align:right;">
-0.6202693
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.5022413
-</td>
-<td style="text-align:right;">
-0.5467407
-</td>
-<td style="text-align:right;">
-0.7394192
-</td>
-<td style="text-align:right;">
--1.9515
-</td>
-<td style="text-align:right;">
-0.9470
-</td>
-<td style="text-align:right;">
-0.5591713
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.3334914
-</td>
-<td style="text-align:right;">
-0.4549681
-</td>
-<td style="text-align:right;">
-0.6745133
-</td>
-<td style="text-align:right;">
--4.6555
-</td>
-<td style="text-align:right;">
--2.0115
-</td>
-<td style="text-align:right;">
-0.0000493
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.8353454
-</td>
-<td style="text-align:right;">
-0.4708589
-</td>
-<td style="text-align:right;">
-0.6861916
-</td>
-<td style="text-align:right;">
--5.1803
-</td>
-<td style="text-align:right;">
--2.4904
-</td>
-<td style="text-align:right;">
-0.0000037
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.0003873
-</td>
-<td style="text-align:right;">
-0.5123543
-</td>
-<td style="text-align:right;">
-0.7157893
-</td>
-<td style="text-align:right;">
--1.4025
-</td>
-<td style="text-align:right;">
-1.4033
-</td>
-<td style="text-align:right;">
-0.9996347
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-</tbody>
-</table>
+Overall, this package finds the intervention that, with minimal effort,
+gets to a desired outcome in a mixed exposure. It then estimates, using
+CV-TMLE, a policy intervention that attempts to get a population’s
+exposure as close as possible to this oracle intervention level without
+violating positivity.
 
-Here we see that the interaction between X4 and X5 was consistently
-found to have the highest antagonistic interaction across the folds.
-Therefore, for our pooled parameter var 1 represents the pooled effects
-of shifting X4, var 2 represents the pooled effects of shifting X5,
-joint is X4 and X5 together and the interaction represents the
-interaction effect for these two variables.
+In this NIEHS data set we correctly identify the most synergistic
+relationship built into the data.
 
-Next we’ll look at the k-fold antagonistic interactions:
-
-``` r
-k_fold_antagonism_effects$`Rank 1` %>%
-  kbl(caption = "K-fold Antagonistic Stochastic Intervention Results") %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-K-fold Antagonistic Stochastic Intervention Results
-</caption>
-<thead>
-<tr>
-<th style="text-align:right;">
-Rank
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:right;">
-Fold
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta Exposure 1
-</th>
-<th style="text-align:right;">
-Delta Exposure 2
-</th>
-<th style="text-align:left;">
-Type
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.8417448
-</td>
-<td style="text-align:right;">
-0.7276929
-</td>
-<td style="text-align:right;">
-0.8530492
-</td>
-<td style="text-align:right;">
--2.5137
-</td>
-<td style="text-align:right;">
-0.8302
-</td>
-<td style="text-align:right;">
-0.3621019
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.7508836
-</td>
-<td style="text-align:right;">
-0.6817120
-</td>
-<td style="text-align:right;">
-0.8256585
-</td>
-<td style="text-align:right;">
--5.3691
-</td>
-<td style="text-align:right;">
--2.1326
-</td>
-<td style="text-align:right;">
-0.0000366
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.8262154
-</td>
-<td style="text-align:right;">
-0.6713063
-</td>
-<td style="text-align:right;">
-0.8193329
-</td>
-<td style="text-align:right;">
--5.4321
-</td>
-<td style="text-align:right;">
--2.2204
-</td>
-<td style="text-align:right;">
-0.0000237
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.7664130
-</td>
-<td style="text-align:right;">
-0.8668148
-</td>
-<td style="text-align:right;">
-0.9310289
-</td>
-<td style="text-align:right;">
--1.0584
-</td>
-<td style="text-align:right;">
-2.5912
-</td>
-<td style="text-align:right;">
-0.4270243
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.6171086
-</td>
-<td style="text-align:right;">
-0.7073394
-</td>
-<td style="text-align:right;">
-0.8410347
-</td>
-<td style="text-align:right;">
--2.2655
-</td>
-<td style="text-align:right;">
-1.0313
-</td>
-<td style="text-align:right;">
-0.5010069
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.7414210
-</td>
-<td style="text-align:right;">
-0.7056593
-</td>
-<td style="text-align:right;">
-0.8400353
-</td>
-<td style="text-align:right;">
--5.3879
-</td>
-<td style="text-align:right;">
--2.0950
-</td>
-<td style="text-align:right;">
-0.0000446
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--4.0338956
-</td>
-<td style="text-align:right;">
-1.1183969
-</td>
-<td style="text-align:right;">
-1.0575429
-</td>
-<td style="text-align:right;">
--6.1066
-</td>
-<td style="text-align:right;">
--1.9611
-</td>
-<td style="text-align:right;">
-0.0000876
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.3246339
-</td>
-<td style="text-align:right;">
-0.9701553
-</td>
-<td style="text-align:right;">
-0.9849646
-</td>
-<td style="text-align:right;">
--1.6059
-</td>
-<td style="text-align:right;">
-2.2551
-</td>
-<td style="text-align:right;">
-0.7435905
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.4952579
-</td>
-<td style="text-align:right;">
-0.5544481
-</td>
-<td style="text-align:right;">
-0.7446127
-</td>
-<td style="text-align:right;">
--1.9547
-</td>
-<td style="text-align:right;">
-0.9642
-</td>
-<td style="text-align:right;">
-0.5660087
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.3504760
-</td>
-<td style="text-align:right;">
-0.4553080
-</td>
-<td style="text-align:right;">
-0.6747651
-</td>
-<td style="text-align:right;">
--4.6730
-</td>
-<td style="text-align:right;">
--2.0280
-</td>
-<td style="text-align:right;">
-0.0000453
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.9422309
-</td>
-<td style="text-align:right;">
-0.4672794
-</td>
-<td style="text-align:right;">
-0.6835783
-</td>
-<td style="text-align:right;">
--5.2820
-</td>
-<td style="text-align:right;">
--2.6024
-</td>
-<td style="text-align:right;">
-0.0000019
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.0964970
-</td>
-<td style="text-align:right;">
-0.5204951
-</td>
-<td style="text-align:right;">
-0.7214535
-</td>
-<td style="text-align:right;">
--1.5105
-</td>
-<td style="text-align:right;">
-1.3175
-</td>
-<td style="text-align:right;">
-0.9095484
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-Interaction
-</td>
-</tr>
-</tbody>
-</table>
-
-Overall, this package provides implementation of estimation a
-non-parametric definition of interaction. We define positive values as
-synergy meaning the expected outcome under joint shift is much larger
-compared to individual addivitive effects. Likewise, we define
-antagonism as negative effects, the joint value being lower than the
-additive effects.
+More discussion is found in the vignette.
 
 ------------------------------------------------------------------------
 
 ## Issues
 
 If you encounter any bugs or have any specific feature requests, please
-[file an issue](https://github.com/blind-contours/InterXshift/issues).
+[file an issue](https://github.com/blind-contours/IsoXshift/issues).
 Further details on filing issues are provided in our [contribution
-guidelines](https://github.com/blind-contours/%20InterXshift/main/contributing.md).
+guidelines](https://github.com/blind-contours/%20IsoXshift/main/contributing.md).
 
 ------------------------------------------------------------------------
 
@@ -2561,14 +1574,14 @@ guidelines](https://github.com/blind-contours/%20InterXshift/main/contributing.m
 
 Contributions are very welcome. Interested contributors should consult
 our [contribution
-guidelines](https://github.com/blind-contours/InterXshift/blob/master/CONTRIBUTING.md)
+guidelines](https://github.com/blind-contours/IsoXshift/blob/master/CONTRIBUTING.md)
 prior to submitting a pull request.
 
 ------------------------------------------------------------------------
 
 ## Citation
 
-After using the `InterXshift` R package, please cite the following:
+After using the `IsoXshift` R package, please cite the following:
 
 ------------------------------------------------------------------------
 
@@ -2691,15 +1704,6 @@ Hejazi, Nima S, Jeremy R Coyle, and Mark J van der Laan. 2020.
 “<span class="nocase">hal9001</span>: Scalable Highly Adaptive Lasso
 Regression in R.” *Journal of Open Source Software* 5 (53): 2526.
 <https://doi.org/10.21105/joss.02526>.
-
-</div>
-
-<div id="ref-mccoy2023semiparametric" class="csl-entry">
-
-McCoy, David B., Alan E. Hubbard, Alejandro Schuler, and Mark J. van der
-Laan. 2023. “Semi-Parametric Identification and Estimation of
-Interaction and Effect Modification in Mixed Exposures Using Stochastic
-Interventions.” <https://arxiv.org/abs/2305.01849>.
 
 </div>
 

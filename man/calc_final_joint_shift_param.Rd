@@ -6,7 +6,6 @@
 \usage{
 calc_final_joint_shift_param(
   joint_shift_fold_results,
-  rank,
   fold_k,
   deltas_updated,
   exposures
@@ -15,14 +14,14 @@ calc_final_joint_shift_param(
 \arguments{
 \item{joint_shift_fold_results}{Results of the joint shift}
 
-\item{rank}{ranking of the interaction found}
-
 \item{fold_k}{Fold the joint shift is identified}
 
 \item{deltas_updated}{The new delta, could be updated if Hn has positivity
 violations}
 
 \item{exposures}{Exposures shifted}
+
+\item{rank}{ranking of the interaction found}
 }
 \description{
 Estimates the shift parameter for a joint shift

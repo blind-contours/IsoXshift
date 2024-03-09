@@ -44,11 +44,10 @@
 #' @return An S3 object of class \code{txshift} containing the results of the
 #'  procedure to compute a TML estimate of the treatment shift parameter.
 tmle_exposhift <- function(data_internal,
-                           delta,
                            Qn_scaled,
                            Qn_unscaled,
                            Hn,
-                           fluctuation = c("standard", "weighted"),
+                           fluctuation = "standard",
                            eif_reg_type = c("hal", "glm"),
                            y,
                            estimator = "tmle") {
@@ -86,7 +85,6 @@ tmle_exposhift <- function(data_internal,
       n_iter = n_steps,
       estimator = estimator,
       .outcome = list(data_internal$y),
-      .delta = list(delta),
       qn_shift_star = list(fitted_fluc_mod$qn_shift_star),
       qn_noshift_star = list(fitted_fluc_mod$qn_noshift_star),
       noshift_psi = tmle_eif_out[["no shift psi"]],
@@ -101,7 +99,7 @@ tmle_exposhift <- function(data_internal,
 
 
   # S3-ify and return output object
-  class(exposure_shift_out) <- "SuperNOVA"
+  class(exposure_shift_out) <- "IsoXshift"
   return(exposure_shift_out)
 }
 

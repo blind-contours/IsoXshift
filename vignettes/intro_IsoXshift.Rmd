@@ -1,0 +1,247 @@
+---
+title: "Isobolic Interaction Identification and Estimation using Data-Adaptive Stochastic Interventions"
+author: "David McCoy"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: ../inst/references.bib
+vignette: >
+  %\VignetteIndexEntry{Isobolic Interaction Identification and Estimation using Data-Adaptive Stochastic Interventions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Motivation 
+
+The motivation behind the package IsoXshift is to simulate isobolic interaction definitions used in toxicology. In areas of climate change or pollutant control, we are interested in identifying the most efficient set of interventions that lead to a target outcome level and we also want to know what the expected outcome would be if we tried to implement such a targeted intervention on a population understanding that it's not realistically to give all individuals the exact exposure levels due to different likelihoods of exposure. This package identifies the exposure levels for two exposures that, if set, result in the target outcome with minimum change from the original exposure distribution. Then it estimates the expected outcome if we were to try and get the population as close as possible to this optimal intervention strategy 
+
+
+## Target Parameter 
+
+To overcome these limitations, InterXshift uses data-adaptive machine learning methods to identify the exposures and exposure sets that have the most synergy or antagonism. This is defined based on our target parameter: 
+
+$$
+\begin{align}
+    \Psi_{\text{IE}} = &E[Y | A_i + \delta_i, A_j + \delta_j, \mathbf{A}_{- i,j}, W] \nonumber \\
+              &- \big(E[Y | A_i + \delta_i, \mathbf{A}_{- i}, W] + E[Y | A_j + \delta_j, \mathbf{A}_{- j}, W]\big) \nonumber \\
+              &+ E[Y]
+  \end{align}
+
+$$
+
+Which measures the expected outcome under a shift of two exposures to the sum of their individual impacts. The exposure sets with the largest positive values have synergy meaning their joint impact is more than additive. The exposure sets with the largest negative value have the most antagonism. 
+
+## G-computation Approximation
+
+To identify the most synergistic and antagonistic exposure sets we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination calculate our interaction. We rank these results and select the top positive and negative results which represent synergy and antagonism. 
+
+
+## Sample Splitting 
+
+Because we don't know which exposure sets to estimate our interaction parameter on a priori, we need to split our data and in the training fold find the exposure sets, using the above g-computation framework, and in an estimation sample, efficiently estimate the interaction parameter for these exposure sets so that we can get valid confidence intervals for these data-adaptively identified interactions. This is done using targeted learning.
+
+
+## Targeted Learning
+
+We use targeted minimum loss based estimation (TMLE) to debias our initial outcome estimates given a shift in exposure such that the resulting estimator is asymptotically unbiased and has the smallest variance. This procedure involves constructing a least favorable submodel which uses a ratio of conditional exposure densities under shift and now shift as a covariate to debias the initial estimates. More details of targeted learning for stochastic shifts are here @diaz2012population
+
+
+## Data Adaptive Delta
+
+For each exposure, the user inputs a respective delta, for example for exposures $M1, M2, M3$ the analyst puts in the `deltas` vector 
+
+```{r deltas, message=FALSE, warning=FALSE}
+deltas <- c("M1" = 1, "M2" = 2.3, "M3" = 1.4)
+```
+
+Which assigns a delta shift amount to each exposure. However, because the user doesn't know the underlying experimentation in the data, a delta that is too big may result in positivity violations which leads to bias and high variance of the estimator. That is, if the user asks for a shift in exposure density that is very unlikely given the data. To solve this, the analyst can also choose to set `adaptive_delta = TRUE` which then makes the shift amount a data adaptive parameter as well. The delta will be reduced until the max of the ratio of densities for each exposure is less than or equal to `hn_trunc_thresh`.
+
+## Inputs and Outputs 
+
+InterXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step) number of folds for the CV procedure, parallelization parameters and if the delta should be data-adaptive. Also the user defines top_n which is the number of ranked synergistic, antagonistic and individual positive and negative effects to extract from the mixed exposure.
+
+The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific synergy results for the rank 1 and rank 2 exposure sets found to have the highest expectation under joint shift compared to positive shift. The pooled parameter is the oracle rank 1, meaning we do a pooled TMLE for all the rank 1 findings across the folds. The same is true for the other parameters. 
+
+
+We get pooled rank synergy, antagonism, positive and negative effects. If the same exposure sets are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings. 
+
+## NHANES Data
+
+Here we will try and replicate the analysis by Gibson et. al., 
+https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1
+
+and Mitro et. al, 
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/
+
+Who used the NHANES 2001-2002 data to investigate 18 POP exposures on telomere length. 
+
+Because reduced telomere length is associated with more biological aging and higher morbidity, we 
+will try and identify which region in the POP space would maximize telomere length. That is, 
+we want to find the region that, if we created a regulation on those chemicals, would result in maximal change in elongating telomere length. 
+
+Let's first load the data and investigate the variables: 
+
+## NHANES Data 
+```{r NHANES data and variables}
+data("NHANES_eurocim")
+
+exposures <- c("LBX074LA", # PCB74 Lipid Adj (ng/g)
+               "LBX099LA", # PCB99 Lipid Adj (ng/g)
+               "LBX118LA", # PCB118 Lipid Adj (ng/g)
+               "LBX138LA", # PCB138 Lipid Adj (ng/g)
+               "LBX153LA", # PCB153 Lipid Adj (ng/g)
+               "LBX170LA", # PCB170 Lipid Adj (ng/g)
+               "LBX180LA", # PCB180 Lipid Adj (ng/g)
+               "LBX187LA", # PCB187 Lipid Adj (ng/g)
+               "LBX194LA", # PCB194 Lipid Adj (ng/g)
+               "LBXD03LA", # 1,2,3,6,7,8-hxcdd Lipid Adj (pg/g)
+               "LBXD05LA", # 1,2,3,4,6,7,8-hpcdd Lipid Adj (pg/g)
+               "LBXD07LA", # 1,2,3,4,6,7,8,9-ocdd Lipid Adj (pg/g)
+               "LBXF03LA", # 2,3,4,7,8-pncdf Lipid Adj (pg/g)
+               "LBXF04LA", # 1,2,3,4,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXF05LA", # 1,2,3,6,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXF08LA", # 1,2,3,4,6,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXHXCLA", # 3,3',4,4',5,5'-hxcb Lipid Adj (pg/g)
+               "LBXPCBLA") # 3,3',4,4',5-pcnb Lipid Adj (pg/g)
+
+NHANES_eurocim <- NHANES_eurocim[complete.cases(NHANES_eurocim[, exposures]), ]
+
+outcome <- "TELOMEAN"
+
+covariates <- c("LBXWBCSI", # White blood cell count (SI)
+                "LBXLYPCT", # Lymphocyte percent (%)
+                "LBXMOPCT", # Monocyte percent (%)
+                "LBXEOPCT", # Eosinophils percent (%)
+                "LBXBAPCT", # Basophils percent (%)
+                "LBXNEPCT", # Segmented neutrophils percent (%)
+                "male", # Sex
+                "age_cent", # Age at Screening, centered
+                "race_cat", # race
+                "bmi_cat3", # Body Mass Index (kg/m**2)
+                "ln_lbxcot", # Cotinine (ng/mL), log-transformed
+                "edu_cat") # Education Level - Adults 20+
+
+
+```
+
+To improve consistency in the region we find to be the maximizing region, it is best to remove an exposure of highly correlated sets, we do that here: 
+
+```{r remove correlated exposures}
+# Calculate the correlation matrix for the exposures
+cor_matrix <- cor(NHANES_eurocim[, exposures], use = "complete.obs")
+
+# Set a threshold for high correlation
+threshold <- 0.8
+
+# Find pairs of highly correlated exposures
+highly_correlated_pairs <- which(abs(cor_matrix) > threshold & lower.tri(cor_matrix), arr.ind = TRUE)
+
+# Initiate a vector to keep track of exposures to remove
+exposures_to_remove <- c()
+
+# Loop through the highly correlated pairs and decide which exposure to remove
+for (pair in seq_len(nrow(highly_correlated_pairs))) {
+  row <- highly_correlated_pairs[pair, "row"]
+  col <- highly_correlated_pairs[pair, "col"]
+
+  if (!(colnames(cor_matrix)[row] %in% exposures_to_remove)) {
+    exposures_to_remove <- c(exposures_to_remove, colnames(cor_matrix)[row])
+  }
+}
+
+# Keep only uncorrelated exposures
+exposures_to_keep <- setdiff(exposures, exposures_to_remove)
+
+```
+
+
+## Run CVtreeMLE 
+
+```{r run CVtreeMLE for NHANES, warning=FALSE, message=FALSE}
+deltas <- list(
+  "LBX074LA" = 1, "LBX099LA" = 1, "LBXD03LA" = 1,
+  "LBXD05LA" = 1, "LBXF03LA" = 1, "LBXF04LA" = 1, "LBXF08LA" = 1, 
+  "LBXPCBLA" = 1
+)
+
+ptm <- proc.time()
+
+w <- NHANES_eurocim[, covariates]
+a <- NHANES_eurocim[, exposures_to_keep]
+y <- NHANES_eurocim$TELOMEAN
+
+NIEH_results <- InterXshift(
+  w = w,
+  a = a,
+  y = y,
+  deltas = deltas,
+  n_folds = 5,
+  outcome_type = "continuous",
+  parallel = TRUE,
+  parallel_type = "multi_session",
+  num_cores = 8,
+  seed = seed,
+  adaptive_delta = FALSE,
+  top_n = 2
+)
+
+proc.time() - ptm
+```
+
+
+## Investigating Results
+
+Let's first look at the results for each fold: 
+
+
+```{r run SuperNOVA NIEHS data, eval = TRUE}
+
+
+indiv_shift_results <- NIEH_results$`Indiv Shift Results`
+em_results <- NIEH_results$`Effect Mod Results`
+joint_shift_results <- NIEH_results$`Joint Shift Results`
+```
+
+
+Let's look at the results for the variable $X7$ which should have a positive 
+effect given the data dictionary provided: 
+
+```{r individual results}
+indiv_shift_results$X7 %>%
+  kableExtra::kbl(caption = "Effect Modification Results") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+We ran `SuperNOVA` with two folds and above we see this exposure was identified in both folds. We also set `adaptive_delta` = TRUE, 
+with an initial shift value of 1. As we can see - in both folds this exposure was found, the delta was reduced to 0.59 to ensure there are no positivity violations (incurring a shift that is unfeasible). The pooled estimate is an average across the folds and variance estimates for the pooled result are done via a pooled targeted estimation fluctuation step using nuisance parameters across the folds. Here, our interpretation of this finding is "If all individuals were exposed to a 0.59 increase in X7 the expected outcome increases by 2.37". This result is significant for both the pooled estimate and the fold specific estimates. 
+
+Now let's look for effect modification: 
+```{r joint results}
+em_results$X7Z %>%
+  kableExtra::kbl(caption = "Effect Modification Results") %>%
+  kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+```
+
+This shows there are differential effects on the impact of shifting $X7$ between
+strata of the baseline covariate Z. This result was found in 1 fold and so the fold specific and pooled results are the same. This is an example of a less consistent finding as it wasn't found in all the folds. The user should incorporate this information into their interpretation of findings. Findings are more consistent with higher CV fold values. 
+
+Here we see that when Z = 0 a 0.47 shift in X7 leads to an average outcome of 17.43 and when Z = 1 the average outcome for the same shift is 33.7. 
+
+```{r interaction results}
+joint_shift_results$X2X7 %>%
+  kableExtra::kbl(caption = "Interaction Results") %>%
+  kableExtra::kable_classic(full_width = T, html_font = "Cambria")
+```
+
+Here we see that in one of the folds an interaction between X2 and X7 was found. The adaptive delta was set to 0.22 for X2 and 0.35 for X7. An increase of 0.22 in X2 leads to a 0.64 increase in Y and a 0.35 increase in X7 leads to a 1.23 increase in Y. An increase in both by these amounts changes Y by 1.87 compared to the additive sum 1.87 if we just add both these individual estimates together. Thus, there is no evidence of interaction given our definition in this case that is more than additive effects. 
+
+
+
+
+

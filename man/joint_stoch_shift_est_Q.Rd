@@ -9,8 +9,9 @@ joint_stoch_shift_est_Q(
   deltas,
   mu_learner,
   covars,
-  av,
+  joint_gn_exp_estims,
   at,
+  av,
   outcome_type
 )
 }
@@ -26,9 +27,9 @@ computed for the exposure \code{A}. This is passed to the internal
 
 \item{covars}{A \code{character} vector covariates to adjust for.}
 
-\item{av}{A \code{dataframe} of validation data specific to the fold}
-
 \item{at}{A \code{dataframe} of training data specific to the fold}
+
+\item{av}{A \code{dataframe} of validation data specific to the fold}
 
 \item{outcome_type}{Variable type of the outcome}
 }

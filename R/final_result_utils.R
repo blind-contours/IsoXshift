@@ -81,7 +81,7 @@ calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
 #' @export
 calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
   condition <- exposure
-  psi_param <-  tmle_fit$psi - tmle_fit$noshift_psi
+  psi_param <- tmle_fit$psi - tmle_fit$noshift_psi
   variance_est <- var(tmle_fit$eif - tmle_fit$noshift_eif) /
     length(tmle_fit$eif)
   se_est <- sqrt(variance_est)
@@ -282,7 +282,6 @@ calc_final_effect_mod_param <- function(tmle_fit_av,
 #' @export
 
 calc_final_joint_shift_param <- function(joint_shift_fold_results,
-                                         rank,
                                          fold_k,
                                          deltas_updated,
                                          exposures) {
@@ -297,22 +296,17 @@ calc_final_joint_shift_param <- function(joint_shift_fold_results,
   )
 
   joint_intxn_results <- as.data.frame(cbind(
-    rep(rank, 4),
     joint_intxn_results,
-    rep(fold_k, 4),
     length(joint_shift_fold_results[[3]]$eif),
-    deltas_updated[[1]],
-    deltas_updated[[2]],
-    c(exposures[[1]], exposures[[2]], paste(exposures[[3]], collapse = "-"), "Interaction")
+    c(exposures[[1]], exposures[[2]], paste(exposures[[3]], collapse = "-"), "Interaction"),
+    fold_k
   ))
 
   names(joint_intxn_results) <- c(
-    "Rank", "Psi", "Variance",
+    "Psi", "Variance",
     "SE", "Lower CI", "Upper CI",
-    "P-value", "Fold", "N",
-    "Delta Exposure 1",
-    "Delta Exposure 2",
-    "Type"
+    "P-value", "N",
+    "Type", "Fold"
   )
   rownames(joint_intxn_results) <- NULL
   return(joint_intxn_results)

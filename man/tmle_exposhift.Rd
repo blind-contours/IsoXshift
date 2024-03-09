@@ -6,11 +6,10 @@
 \usage{
 tmle_exposhift(
   data_internal,
-  delta,
   Qn_scaled,
   Qn_unscaled,
   Hn,
-  fluctuation = c("standard", "weighted"),
+  fluctuation = "standard",
   eif_reg_type = c("hal", "glm"),
   y,
   estimator = "tmle"
@@ -20,10 +19,6 @@ tmle_exposhift(
 \item{data_internal}{A \code{data.table} constructed internally by a call to
 \code{expo_shift}. This contains most of the data required for computing the
 targeted minimum loss (TML) estimator.}
-
-\item{delta}{A \code{numeric} value indicating the shift in the treatment to
-be used in defining the target parameter. This is defined with respect to
-the scale of the treatment (A).}
 
 \item{Qn_scaled}{An object providing the value of the outcome evaluated after
 imposing min max scaling. This object is passed in after being
@@ -55,6 +50,10 @@ covariates contributing to the censoring mechanism (i.e., EIF ~ V | C = 1).}
 
 \item{estimator}{A \code{character} string specifying the estimator to be used.
 Currently, only "tmle" is supported.}
+
+\item{delta}{A \code{numeric} value indicating the shift in the treatment to
+be used in defining the target parameter. This is defined with respect to
+the scale of the treatment (A).}
 }
 \value{
 An S3 object of class \code{txshift} containing the results of the

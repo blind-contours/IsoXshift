@@ -37,67 +37,49 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
   estimator <- match.arg(estimator)
 
   names <- names(intxn_shift_results)
-  names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
+  names <- gsub("^(fold [0-9]+) :.*", "\\1", names)
 
   k_fold_results_list <- list()
   pooled_results_list <- list()
 
 
-  for (var_set in unique(names)) {
-    var_set_results <- intxn_shift_results[stringr::str_detect(
-      names(intxn_shift_results), var_set
-    )]
 
-    interaction_sets <- gsub("^.+?:", "", names(var_set_results))
-
-    test <- unlist(var_set_results, recursive = FALSE)
+  test <- unlist(intxn_shift_results, recursive = FALSE)
 
     # Get clever covariate for each shift for each fold ----
 
-    Hn <- test[stringr::str_detect(names(test), "Hn")]
-    Hn_unlist <- unlist(Hn, recursive = FALSE)
+    Hn_var1_shift <- do.call(rbind,test[stringr::str_detect(names(test), "Hn_var1_shift")])
+    Hn_var2_shift <- do.call(rbind,test[stringr::str_detect(names(test), "Hn_var2_shift")])
+    Hn_joint_shift <- do.call(rbind,test[stringr::str_detect(names(test), "Hn_joint_shift")])
 
-    Hn_1 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-      names(Hn_unlist), "Hn1"
-    )])
-    Hn_2 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-      names(Hn_unlist), "Hn2"
-    )])
-    Hn_3 <- do.call(rbind, Hn_unlist[stringr::str_detect(
-      names(Hn_unlist), "Hn3"
-    )])
+    Qn_scaled_no_shift <- test[stringr::str_detect(names(test), "Qn_scaled_no_shift")]
+    Qn_scaled_no_shift <- as.data.frame(unlist(Qn_scaled_no_shift, recursive = FALSE))
+    rownames(Qn_scaled_no_shift) <- NULL
 
-    # Get scaled Qn for each shift for each fold ----
+    Qn_scaled_var1_shift <- test[stringr::str_detect(names(test), "Qn_scaled_var1_shift")]
+    Qn_scaled_var1_shift <- as.data.frame(unlist(Qn_scaled_var1_shift, recursive = FALSE))
+    rownames(Qn_scaled_var1_shift) <- NULL
+    Qn_scaled_var1_shift <- cbind(Qn_scaled_no_shift,Qn_scaled_var1_shift)
+    colnames(Qn_scaled_var1_shift) <- c("noshift", "upshift")
 
-    Qn <- test[stringr::str_detect(names(test), "Qn_scaled")]
-    Qn_unlist <- unlist(Qn, recursive = FALSE)
-
-    Qn_scaled_1 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-      names(Qn_unlist), "Qn_scaled1"
-    )])
-    Qn_scaled_2 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-      names(Qn_unlist), "Qn_scaled2"
-    )])
-    Qn_scaled_3 <- do.call(rbind, Qn_unlist[stringr::str_detect(
-      names(Qn_unlist), "Qn_scaled3"
-    )])
-
-    data <- do.call(rbind, test[stringr::str_detect(
-      names(test), "data"
-    )])
-
-    k_fold_results <- do.call(rbind, test[stringr::str_detect(
-      names(test), "k_fold"
-    )])
+    Qn_scaled_var2_shift <- test[stringr::str_detect(names(test), "Qn_scaled_var2_shift")]
+    Qn_scaled_var2_shift <- as.data.frame(unlist(Qn_scaled_var2_shift, recursive = FALSE))
+    rownames(Qn_scaled_var2_shift) <- NULL
+    Qn_scaled_var2_shift <- cbind(Qn_scaled_no_shift,Qn_scaled_var2_shift)
+    colnames(Qn_scaled_var2_shift) <- c("noshift", "upshift")
 
 
-    deltas <- do.call(rbind, test[stringr::str_detect(
-      names(test), "deltas"
-    )])
+    Qn_scaled_joint_shift <- test[stringr::str_detect(names(test), "Qn_scaled_joint_shift")]
+    Qn_scaled_joint_shift <- as.data.frame(unlist(Qn_scaled_joint_shift, recursive = FALSE))
+    rownames(Qn_scaled_joint_shift) <- NULL
+    Qn_scaled_joint_shift <- cbind(Qn_scaled_no_shift,Qn_scaled_joint_shift)
+    colnames(Qn_scaled_joint_shift) <- c("noshift", "upshift")
 
 
-    Qn_scaled <- list(Qn_scaled_1, Qn_scaled_2, Qn_scaled_3)
-    Hn <- list(Hn_1, Hn_2, Hn_3)
+    Qn_scaled <- list(Qn_scaled_var1_shift, Qn_scaled_var2_shift, Qn_scaled_joint_shift)
+    Hn <- list(Hn_var1_shift, Hn_var2_shift, Hn_joint_shift)
+
+    data <- do.call(rbind, test[stringr::str_detect(names(test), "data")])
 
     intxn_results_list <- list()
 
@@ -105,14 +87,11 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
     for (i in 1:length(Hn)) {
       hn_estim <- Hn[[i]]
       qn_estim_scaled <- Qn_scaled[[i]]
-      delta <- deltas[[i]]
 
       tmle_fit <- tmle_exposhift(
         data_internal = data,
-        delta = delta,
         Qn_scaled = qn_estim_scaled,
         Hn = hn_estim,
-        fluctuation = fluctuation,
         y = data$y,
       )
 
@@ -121,19 +100,14 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
 
     intxn_pooled <- calc_final_joint_shift_param(
       joint_shift_fold_results = intxn_results_list,
-      rank = var_set,
       fold_k = "Pooled TMLE",
       deltas_updated = deltas,
-      exposures = c("Var 1","Var 2","Joint","Interaction")
+      exposures = c("Var 1", "Var 2", "Joint", "Interaction")
     )
 
-    rownames(k_fold_results) <- NULL
+    k_fold_results <- test[stringr::str_detect(names(test), "k_fold_result")]
 
 
-    pooled_results_list[[var_set]] <- intxn_pooled
-    k_fold_results_list[[var_set]] <- k_fold_results
-  }
 
-
-  return(list("k_fold_results" = k_fold_results_list, "pooled_results" = pooled_results_list))
+  return(list("k_fold_results" = k_fold_results, "pooled_results" = intxn_pooled))
 }
