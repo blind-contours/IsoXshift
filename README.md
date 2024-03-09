@@ -443,7 +443,7 @@ W
 Let’s look at the interactions built into this synthetic data:
 
 <figure>
-<img src="%22man/figures/NIEHS_interactions.png%22"
+<img src="man/figures/NIEHS_interactions.png"
 alt="NIEHS Interactions" />
 <figcaption aria-hidden="true">NIEHS Interactions</figcaption>
 </figure>
