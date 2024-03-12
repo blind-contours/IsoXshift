@@ -46,8 +46,6 @@ if used.}
 \item{n_bins}{Number of bins to discretize outcome for haldensify if used.}
 
 \item{use_multinomial}{TRUE/FALSE for using multinomial for discretized exposure}
-
-\item{density_type}{Type of density estimator used}
 }
 \value{
 A \code{data.table} with four columns, containing estimates of the

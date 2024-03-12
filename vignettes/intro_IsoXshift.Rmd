@@ -17,34 +17,46 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r libraries, warning=FALSE}
+library(IsoXshift)
+library(devtools)
+library(dplyr)
+library(kableExtra)
+library(sl3)
+
+seed <- 429153
+set.seed(seed)
+```
+
 ## Motivation 
 
-The motivation behind the package IsoXshift is to simulate isobolic interaction definitions used in toxicology. In areas of climate change or pollutant control, we are interested in identifying the most efficient set of interventions that lead to a target outcome level and we also want to know what the expected outcome would be if we tried to implement such a targeted intervention on a population understanding that it's not realistically to give all individuals the exact exposure levels due to different likelihoods of exposure. This package identifies the exposure levels for two exposures that, if set, result in the target outcome with minimum change from the original exposure distribution. Then it estimates the expected outcome if we were to try and get the population as close as possible to this optimal intervention strategy 
+The motivation behind the package IsoXshift is to simulate isobolic interaction definitions used in toxicology. In areas of climate change or pollutant control, we are interested in identifying the most efficient set of interventions that lead to a target outcome level and we also want to know what the expected outcome would be if we tried to implement such a targeted intervention on a population understanding that it's not realistically to give all individuals the exact exposure levels due to different likelihoods of exposure. This package identifies the exposure levels for two exposures that, if set, result in the target outcome with minimum change from the original exposure distribution. Then it estimates the expected outcome if we were to try and get the population as close as possible to this optimal intervention strategy. This package analysis mixed exposures, finding the exposure relationship with the strongest synergy and estimates a policy that tries to change people's exposures to these target levels.  
 
 
 ## Target Parameter 
 
-To overcome these limitations, InterXshift uses data-adaptive machine learning methods to identify the exposures and exposure sets that have the most synergy or antagonism. This is defined based on our target parameter: 
+IsoXshift uses data-adaptive machine learning methods to identify the exposures with the most synergy. This is defined based on our target parameter: 
 
 $$
 \begin{align}
-    \Psi_{\text{IE}} = &E[Y | A_i + \delta_i, A_j + \delta_j, \mathbf{A}_{- i,j}, W] \nonumber \\
-              &- \big(E[Y | A_i + \delta_i, \mathbf{A}_{- i}, W] + E[Y | A_j + \delta_j, \mathbf{A}_{- j}, W]\big) \nonumber \\
-              &+ E[Y]
-  \end{align}
+    \Psi(\bar{Y}_t, A_i, A_j) = \ &\mathrm{argmin}_{s_i, s_j} f(s_i, s_j)\Big( E_W[Y|A_i = a_i, A_j = a_j, \textbf{A}_{-i,j},W] \nonumber \\
+    &= Y_{\text{target}} \Big) \\
+    &\text{subject to } c_i \in A_i, \ c_j \in A_j \nonumber
+\end{align}
+
 
 $$
 
-Which measures the expected outcome under a shift of two exposures to the sum of their individual impacts. The exposure sets with the largest positive values have synergy meaning their joint impact is more than additive. The exposure sets with the largest negative value have the most antagonism. 
+This target findings the minimal shift, which is some function of the intervention and observed exposure that results in an expectation that is the same (or close to) a target outcome. This finds the most efficient intervention (most synergistic relationship) that results in a target outcome.
 
 ## G-computation Approximation
 
-To identify the most synergistic and antagonistic exposure sets we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination calculate our interaction. We rank these results and select the top positive and negative results which represent synergy and antagonism. 
+To identify the most synergistic exposure set we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination, on a grid between min and max of the exposures, we get predictions through the model if the exposures are set to the various levels. At each iteration we calculate the mean difference between the new intervention level and the mean natural exposure level. We collect all expectations that are close to our target outcome and then select the ones with this lowest change from the natural exposure levels. This gives us the exposure relationship and levels of intervention, that result in the target outcome.  
 
 
 ## Sample Splitting 
 
-Because we don't know which exposure sets to estimate our interaction parameter on a priori, we need to split our data and in the training fold find the exposure sets, using the above g-computation framework, and in an estimation sample, efficiently estimate the interaction parameter for these exposure sets so that we can get valid confidence intervals for these data-adaptively identified interactions. This is done using targeted learning.
+Because we don't know which exposure relationship and intervention to estimate our synergy interaction parameter on a priori, we need to split our data and in the training fold find the exposure sets, using the above g-computation framework, and in an estimation sample, efficiently estimate the interaction parameter for these exposure sets so that we can get valid confidence intervals for these data-adaptively identified interactions. This is done using targeted learning.
 
 
 ## Targeted Learning
@@ -54,22 +66,16 @@ We use targeted minimum loss based estimation (TMLE) to debias our initial outco
 
 ## Data Adaptive Delta
 
-For each exposure, the user inputs a respective delta, for example for exposures $M1, M2, M3$ the analyst puts in the `deltas` vector 
-
-```{r deltas, message=FALSE, warning=FALSE}
-deltas <- c("M1" = 1, "M2" = 2.3, "M3" = 1.4)
-```
-
-Which assigns a delta shift amount to each exposure. However, because the user doesn't know the underlying experimentation in the data, a delta that is too big may result in positivity violations which leads to bias and high variance of the estimator. That is, if the user asks for a shift in exposure density that is very unlikely given the data. To solve this, the analyst can also choose to set `adaptive_delta = TRUE` which then makes the shift amount a data adaptive parameter as well. The delta will be reduced until the max of the ratio of densities for each exposure is less than or equal to `hn_trunc_thresh`.
+Setting two exposures to specific levels, say PFAS 1 = 0.1, and PFAS = 0.3, is not a pathwise differentiable parameter. Furthermore, it is also not possible realistically to set all individual's exposure levels to one specific dose. We cannot, in the real world, for everyone to have PFAS exposure of 0.1. What we can do is say that PFAS 1 = 0.1, and PFAS = 0.3 has been found to most effectively reduce an outcome, like diabetes, to levels that are deemed healthy. We want to simulate the impact of an intention to intervene policy where we were to shift people's exposure levels towards this reduced amount, enforced by some policy, but respecting that people will not get to that amount exactly. People are restricted to how close they can get to this oracle level based on their likelihood of exposure. In the package `hn_trunc_thresh` indicates how far we can shift someone towards the new policy levels before we do not have support in our data to move them further, meaning their likelihood of the new intervention level is too far their observed exposure likelihood. For example if hn_trunc_thresh is set to 10, this means we are only willing a 10 fold change to their natural likelihood. This restriction ensures we are not creating estimates that are unfeasible in the real world. 
 
 ## Inputs and Outputs 
 
-InterXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step) number of folds for the CV procedure, parallelization parameters and if the delta should be data-adaptive. Also the user defines top_n which is the number of ranked synergistic, antagonistic and individual positive and negative effects to extract from the mixed exposure.
+IsoXshift takes in covariates, exposures, an outcome, target_outcome_lvl, which is the level of the outcome we want to reach, epsilon, which is the amount of room around the target we allow for, the estimator (tmle or one step) number of folds for the CV procedure, and parallelization parameters. 
 
-The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific synergy results for the rank 1 and rank 2 exposure sets found to have the highest expectation under joint shift compared to positive shift. The pooled parameter is the oracle rank 1, meaning we do a pooled TMLE for all the rank 1 findings across the folds. The same is true for the other parameters. 
+The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific synergy results for exposure sets found to have the most synergy to our target outcome. The pooled parameter is the pooling these estimates across the folds.
 
 
-We get pooled rank synergy, antagonism, positive and negative effects. If the same exposure sets are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings. 
+If the same exposure sets are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings. 
 
 ## NHANES Data
 
@@ -161,87 +167,89 @@ exposures_to_keep <- setdiff(exposures, exposures_to_remove)
 ```
 
 
+```{r impute mean for covariates}
+
+# Assuming NHANES_eurocim is your dataframe:
+NHANES_eurocim_imputed <- NHANES_eurocim %>%
+  mutate(across(all_of(covariates), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+
+```
+
+
 ## Run CVtreeMLE 
 
-```{r run CVtreeMLE for NHANES, warning=FALSE, message=FALSE}
-deltas <- list(
-  "LBX074LA" = 1, "LBX099LA" = 1, "LBXD03LA" = 1,
-  "LBXD05LA" = 1, "LBXF03LA" = 1, "LBXF04LA" = 1, "LBXF08LA" = 1, 
-  "LBXPCBLA" = 1
-)
+```{r run IsoXshift for NHANES, warning=FALSE, message=FALSE}
 
 ptm <- proc.time()
 
-w <- NHANES_eurocim[, covariates]
-a <- NHANES_eurocim[, exposures_to_keep]
-y <- NHANES_eurocim$TELOMEAN
+w <- NHANES_eurocim_imputed[, covariates]
+a <- NHANES_eurocim_imputed[, exposures_to_keep]
+y <- NHANES_eurocim_imputed$TELOMEAN
 
-NIEH_results <- InterXshift(
+n_folds <- 5 
+
+NIEHS_results <- IsoXshift(
   w = w,
   a = a,
   y = y,
-  deltas = deltas,
-  n_folds = 5,
+  n_folds = n_folds,
+  num_cores = 6,
   outcome_type = "continuous",
-  parallel = TRUE,
-  parallel_type = "multi_session",
-  num_cores = 8,
   seed = seed,
-  adaptive_delta = FALSE,
-  top_n = 2
+  target_outcome_lvl = mean(y) + mean(y) * .1,
+  epsilon = 0.2
 )
 
 proc.time() - ptm
 ```
 
 
-## Investigating Results
+## K Fold Results
 
 Let's first look at the results for each fold: 
 
+```{r k fold results, eval = TRUE}
+k_fold_results <- do.call(rbind, NIEHS_results$`K-fold Results`)
+rownames(k_fold_results) <- NULL
 
-```{r run SuperNOVA NIEHS data, eval = TRUE}
-
-
-indiv_shift_results <- NIEH_results$`Indiv Shift Results`
-em_results <- NIEH_results$`Effect Mod Results`
-joint_shift_results <- NIEH_results$`Joint Shift Results`
-```
-
-
-Let's look at the results for the variable $X7$ which should have a positive 
-effect given the data dictionary provided: 
-
-```{r individual results}
-indiv_shift_results$X7 %>%
-  kableExtra::kbl(caption = "Effect Modification Results") %>%
+k_fold_results %>%
+  kableExtra::kbl(caption = "K Fold NHANES IsoXshift Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-We ran `SuperNOVA` with two folds and above we see this exposure was identified in both folds. We also set `adaptive_delta` = TRUE, 
-with an initial shift value of 1. As we can see - in both folds this exposure was found, the delta was reduced to 0.59 to ensure there are no positivity violations (incurring a shift that is unfeasible). The pooled estimate is an average across the folds and variance estimates for the pooled result are done via a pooled targeted estimation fluctuation step using nuisance parameters across the folds. Here, our interpretation of this finding is "If all individuals were exposed to a 0.59 increase in X7 the expected outcome increases by 2.37". This result is significant for both the pooled estimate and the fold specific estimates. 
+Here, we find that the synergistic interaction between LBXF03LA-LBXF04LA most efficiently gets to our target outcome of 10 \% longer telomere length. This means that these two exposure need to changed the least together to get to our target outcome and therefore represent the most efficient intervention policy. 
 
-Now let's look for effect modification: 
-```{r joint results}
-em_results$X7Z %>%
-  kableExtra::kbl(caption = "Effect Modification Results") %>%
-  kableExtra::kable_classic(full_width = F, html_font = "Cambria")
+We can look at what the target interventions are for each fold, this represents our oracle point parameter or the exposure levels for these two exposures that result in the 10\% increase while being as close to the observed distribution as possible.
+
+
+## Oracle Intervention Levels
+
+```{r oracle point results}
+
+oracle_targets <- NIEHS_results$`K Fold Oracle Targets`
+oracle_targets <- do.call(rbind, oracle_targets)
+oracle_targets$Fold <- seq(1:n_folds)
+
+oracle_targets %>%
+  kableExtra::kbl(caption = "Oracle Intervention Level Targets by Fold") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-This shows there are differential effects on the impact of shifting $X7$ between
-strata of the baseline covariate Z. This result was found in 1 fold and so the fold specific and pooled results are the same. This is an example of a less consistent finding as it wasn't found in all the folds. The user should incorporate this information into their interpretation of findings. Findings are more consistent with higher CV fold values. 
+Above, this table shows the most synergistic relationship intervention targets per fold. Observed levels are the mean for the training data for the respective exposure in the respective fold. Intervened level is the level the exposure was set to in tandem with the other exposure to meet the target outcome. Avg Diff is the average difference between the intervened levels and natural exposure levels. Difference is the deviation from the target outcome level and should be within epsilon. 
 
-Here we see that when Z = 0 a 0.47 shift in X7 leads to an average outcome of 17.43 and when Z = 1 the average outcome for the same shift is 33.7. 
+## Pooled Target Parameter 
 
-```{r interaction results}
-joint_shift_results$X2X7 %>%
-  kableExtra::kbl(caption = "Interaction Results") %>%
-  kableExtra::kable_classic(full_width = T, html_font = "Cambria")
+```{r pooled results}
+
+pooled_target_param <- NIEHS_results$`Oracle Pooled Results`
+
+pooled_target_param %>%
+  kableExtra::kbl(caption = "Pooled Shift Towards Target") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-Here we see that in one of the folds an interaction between X2 and X7 was found. The adaptive delta was set to 0.22 for X2 and 0.35 for X7. An increase of 0.22 in X2 leads to a 0.64 increase in Y and a 0.35 increase in X7 leads to a 1.23 increase in Y. An increase in both by these amounts changes Y by 1.87 compared to the additive sum 1.87 if we just add both these individual estimates together. Thus, there is no evidence of interaction given our definition in this case that is more than additive effects. 
+These results show the pooled shift results across the folds. Going back to our target interention levels, if we average the Intervened Levels and Observed Levels, our average intervened level is 6.489474 for LBXF03LA compared to observed 6.703457. For LBXF04LA the average intervened level was 5.828421 compared to the average observed exposure of 6.44141. This means we are trying to slightly reduce both exposures in order to increase telomere length by 10\%. We are trying to get the population as close to these two exposure levels without violating positivity, meaning here that the likelihood of the new exposure levels is no more than 10 times different than the observed exposure likelihood (this level is default in the IsoXshift run).
 
-
-
+We can see that, although the results are consistent for the oracle point parameter, estimation is a different story, we don't see a positive or significant result for our shifts, which indicates we can't move the population close enough to the oracle intervention level. 
 
 

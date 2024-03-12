@@ -15,12 +15,13 @@ IsoXshift(
   a,
   y,
   target_outcome_lvl,
+  epsilon,
   estimator = "tmle",
   mu_learner = NULL,
   g_learner = NULL,
+  pi_learner = NULL,
   n_folds = 2,
   outcome_type = "continuous",
-  verbose = FALSE,
   parallel = TRUE,
   parallel_type = "multi_session",
   num_cores = 2,
@@ -46,11 +47,11 @@ maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 \item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
 g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
 
+\item{pi_learner}{Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.}
+
 \item{n_folds}{Number of folds to use in cross-validation, default is 2.}
 
 \item{outcome_type}{Data type of the outcome, default is "continuous".}
-
-\item{verbose}{Whether to run verbosely (default: FALSE).}
 
 \item{parallel}{Whether to parallelize across cores (default: TRUE).}
 
@@ -77,8 +78,6 @@ for exposures, exposure-mediator, or exposure-covariate relationships.}
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
 
-\item{pi_learner}{Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.}
-
 \item{e_learner}{Learners for fitting Super Learner ensembles to the e-mechanism
 g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
 
@@ -88,6 +87,8 @@ g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \p
 
 \item{quantile_thresh}{Threshold based on quantiles of the F-statistic, used to
 identify "important" basis functions in the data-adaptive procedure.}
+
+\item{verbose}{Whether to run verbosely (default: FALSE).}
 
 \item{adaptive_delta}{If TRUE, reduces the user-specified delta until
 the Hn calculated for a shift does not have any observation greater

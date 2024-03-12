@@ -6,14 +6,12 @@
 \usage{
 find_min_concentrations(
   data,
-  grid,
   a_names,
   w_names,
   outcome,
-  target_outcome_lvl,
   outcome_type,
   mu_learner,
-  target_outcome,
+  target_outcome_lvl,
   epsilon,
   seed
 )
