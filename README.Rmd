@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`IsoXshift` <img src="man/figures/man/figures/IsoXshift_sticker.png" align="right" height="200" style="float:right; height:200px;"/>
+# R/`IsoXshift` 
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/IsoXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/IsoXshift/actions)
