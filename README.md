@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`IsoXshift` <img src="man/figures/IsoXshift_sticker.png" style="float:right; height:200px;">
+# R/`IsoXshift` <img src="IsoXshift_sticker.png" style="float:right; height:200px;">
 
 <!-- badges: start -->
 
