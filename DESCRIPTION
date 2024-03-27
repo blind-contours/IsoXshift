@@ -1,5 +1,5 @@
 Package: IsoXshift
-Title: Semi-Parametric Identification and Estimation of Interaction using Stochastic Interventions
+Title: Isobolic Identification and Estimation of Interaction using Stochastic Interventions
 Version: 1.0.1
 Authors@R: 
     person(given = "David",

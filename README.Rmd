@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`IsoXshift` <img src="man/figures/IsoXshift_sticker.png" style="float:right; height:200px;">
+# R/`IsoXshift` <img src='isoXshift_sticker.png' style="float:right; height:200px;">
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/IsoXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/IsoXshift/actions)
@@ -61,25 +61,9 @@ allows ensemble machine learning to be used for nuisance parameter
 estimation and `sl3` is not on CRAN the `IsoXshift` package is not
 available on CRAN and must be downloaded here.
 
-There are many depedencies for `IsoXshift` so it's easier to break up 
-installation of the various packages to ensure proper installation. 
-
-First install the basis estimators used in the data-adaptive
-variable discovery of the exposure and covariate space: 
-
-```{r tree-packages, eval = FALSE}
-install.packages("earth")
-install.packages("hal9001")
-```
-
 `IsoXshift` uses the `sl3` package to build ensemble machine learners for each nuisance parameter. 
 We have to install off the development branch, first download these two packages for `sl3`
 
-```{r IsoXshift-packages,  eval = FALSE}
-install.packages(c("ranger", "arm", "xgboost", "nnls"))
-```
-
-Now install `sl3` on devel:
 
 ```{r sl3_devel,  eval = FALSE}
 remotes::install_github("tlverse/sl3@devel")
@@ -89,12 +73,6 @@ Make sure `sl3` installs correctly then install `IsoXshift`
 
 ```{r IsoXshift,  eval = FALSE}
 remotes::install_github("blind-contours/IsoXshift@main")
-```
-
-`IsoXshift` has some other miscellaneous dependencies that are used in the examples as well as in the plotting functions. 
-
-```{r msc_package,  eval = FALSE}
-install.packages(c("kableExtra", "hrbrthemes", "viridis"))
 ```
 
 ---
