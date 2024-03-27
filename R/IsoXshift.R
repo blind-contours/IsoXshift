@@ -1,12 +1,12 @@
 #' @title Data-adaptive estimation of interactions, effect modification, and
 #' mediation using stochastic shift intervention target parameters. In many mixed exposure settings,
 #' interactions in the mixture, effect modifiers in the covariates that modify the
-#' impact of an exposure and mediating pathways from exposure to outcome are generally unknown. SuperNOVA finds these variable sets
+#' impact of an exposure and mediating pathways from exposure to outcome are generally unknown. IsoXshift finds these variable sets
 #' on one part of the data and estimates counterfactual outcome changes given shifts to exposure on an estimation part of the data.
 #' Using cross-validation and targeted learning, estimators are created that utlize machine learning that are unbiased and have the
 #' minimum variance.
 #'
-#' @description The SuperNOVA function provides an efficient approach to estimate
+#' @description The IsoXshift function provides an efficient approach to estimate
 #' interactions, effect modification, and mediation using targeted minimum loss
 #' estimators for counterfactual mean differences under various target parameters.
 #' The procedure employs data-adaptive ensemble b-spline models and stochastic interventions,
@@ -24,7 +24,7 @@
 #' @param deltas A \code{numeric} value indicating the shift in exposures to
 #' define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
 #' is true, these values will be reduced.
-#' @param var_sets A list specifying variable sets for deterministic SuperNOVA usage.
+#' @param var_sets A list specifying variable sets for deterministic IsoXshift usage.
 #' Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
 #' for exposures, exposure-mediator, or exposure-covariate relationships.
 #' @param estimator The type of estimator to fit: \code{"tmle"} for targeted
@@ -72,7 +72,7 @@
 #' is done. No estimates are delivered only exposure mediator sets. If FALSE paths
 #' are both discovered and estimated.
 #'
-#' @return An S3 object of class \code{SuperNOVA} containing the results of the
+#' @return An S3 object of class \code{IsoXshift} containing the results of the
 #' procedure to compute a TML or one-step estimate of the counterfactual mean
 #' under a modified treatment policy that shifts a continuous-valued exposure
 #' by a scalar amount \code{delta}. These exposures are data-adaptively

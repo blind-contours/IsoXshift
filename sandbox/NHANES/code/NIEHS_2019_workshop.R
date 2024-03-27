@@ -1,4 +1,4 @@
-library(SuperNOVA)
+library(IsoXshift)
 library(readr)
 library(here)
 
@@ -65,7 +65,7 @@ a <- NIEHS_2019[, exposures]
 y <- NIEHS_2019$TELOMEAN
 
 
-nhanes_results <- SuperNOVA(
+nhanes_results <- IsoXshift(
   w = w,
   a = a,
   y = y,
@@ -80,7 +80,7 @@ nhanes_results <- SuperNOVA(
 
 saveRDS(
   object = nhanes_results,
-  file = here("sandbox/NHANES/output", paste0("SuperNOVA_", "nhanes_prime", ".rds"))
+  file = here("sandbox/NHANES/output", paste0("IsoXshift_", "nhanes_prime", ".rds"))
 )
 
 

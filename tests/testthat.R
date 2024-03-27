@@ -1,4 +1,4 @@
 library(testthat)
-library(SuperNOVA)
+library(IsoXshift)
 
-test_check("SuperNOVA")
+test_check("IsoXshift")

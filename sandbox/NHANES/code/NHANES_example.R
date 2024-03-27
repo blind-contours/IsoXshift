@@ -6,7 +6,7 @@ library(devtools)
 load_all()
 # File paths
 input_path <- here("sandbox/NHANES/output/NHANES_data.RDS")
-output_path <- here("sandbox/NHANES/output/", paste0("SuperNOVA_", "NHANES", ".rds"))
+output_path <- here("sandbox/NHANES/output/", paste0("IsoXshift_", "NHANES", ".rds"))
 
 # Load data
 nhanes_data <- readRDS(input_path)
@@ -86,8 +86,8 @@ df_imputed[, covariates] <- lapply(df_imputed[, covariates], function(x) {
 })
 
 
-# Run SuperNOVA
-nhanes_results <- SuperNOVA(
+# Run IsoXshift
+nhanes_results <- IsoXshift(
   w = df_imputed[, covariates],
   a = df_imputed[, metals],
   z = df_imputed[, mediators],

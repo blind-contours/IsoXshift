@@ -1,16 +1,16 @@
 
-compute_meta_results <- function(supernova_results, parameter) {
+compute_meta_results <- function(IsoXshift_results, parameter) {
   if (parameter == "Indiv Shift") {
-    stratified_results <- supernova_results$`Indiv Shift Results`
+    stratified_results <- IsoXshift_results$`Indiv Shift Results`
   } else if (parameter == "Joint Shift") {
     stratified_results <-
-      supernova_results$`Joint Shift Results` %>%
+      IsoXshift_results$`Joint Shift Results` %>%
       dplyr::group_by(Condition, Variables)
     stratified_results <- dplyr::group_split(stratified_results)
   } else {
     stratified_results <- split(
-      supernova_results$`Effect Mod Results`,
-      supernova_results$`Effect Mod Results`$Condition
+      IsoXshift_results$`Effect Mod Results`,
+      IsoXshift_results$`Effect Mod Results`$Condition
     )
   }
 

@@ -33,7 +33,7 @@
 #' @examples
 #' \dontrun{
 #' # Load required libraries
-#' library(SuperNOVA)
+#' library(IsoXshift)
 #' library(sl3)
 #'
 #' # Create example data

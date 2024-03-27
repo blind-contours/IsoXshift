@@ -1,4 +1,3 @@
-^SuperNOVA\.Rproj$
 ^\.Rproj\.user$
 ^doc$
 ^Meta$
@@ -11,4 +10,3 @@
 ^.lintr$
 ^codecov\.yml$
 ^LICENSE\.md$
-^contributing\.md$

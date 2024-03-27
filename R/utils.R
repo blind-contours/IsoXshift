@@ -128,12 +128,12 @@ calc_pvals <- function(psi, variance) {
   return(p_value)
 }
 
-is.SuperNOVA <- function(x) {
-  class(x) == "SuperNOVA"
+is.IsoXshift <- function(x) {
+  class(x) == "IsoXshift"
 }
 
-is.SuperNOVA <- function(x) {
-  class(x) == "SuperNOVA_msm"
+is.IsoXshift <- function(x) {
+  class(x) == "IsoXshift_msm"
 }
 
 ###################################################################
