@@ -49,7 +49,7 @@ We define interaction as the counterfactual mean of the outcome under stochastic
 
 To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the target_outcome_lvl for the outcome, epsilon, which is some allowed closeness to the target. For example, if the target outcome level is 15, and epsilon is 0.5, then interventions that lead to 15.5 are considered. The restriction limit is hn_trunc_thresh which is the allowed distance from the original exposure likelihood. 10 for example indicates that the likelihood should not be more than x10 difference from the original exposure level likelihood. That is, if an individual's likelihood is originally 0.1 given their covariate history and the likelihood of exposure to the intervened level is 0.01, this is 10 times different and would be the limit intervention. A detailed guide is provided in the vignette. With these inputs, `IsoXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
 
-`IsoXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `InterXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
+`IsoXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `IsoXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
 
 
 ---
@@ -123,11 +123,11 @@ sim_results <- IsoXshift(
   w = w,
   a = a,
   y = y,
-  n_folds = 5,
+  n_folds = 6,
   num_cores = 6,
   outcome_type = "continuous",
   seed = seed,
-  target_outcome_lvl = 15,
+  target_outcome_lvl = 12,
   epsilon = 0.5
 )
 proc.time() - ptm

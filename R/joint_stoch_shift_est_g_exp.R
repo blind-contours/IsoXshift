@@ -115,7 +115,7 @@ joint_stoch_shift_est_g_exp <- function(exposures,
       )
 
       obs_pred_shifted <- g_model$predict(task_obs_shift_rep)
-      ratio <- obs_pred_no_shifted$likelihood / obs_pred_shifted$likelihood
+      ratio <- obs_pred_no_shifted / obs_pred_shifted
       delta_diff <- abs(grid1 - delta)
       replicated_data$delta_diff <- delta_diff
       replicated_data$ratio <- ratio
@@ -125,8 +125,8 @@ joint_stoch_shift_est_g_exp <- function(exposures,
 
       # Find the row with the minimum delta_diff within the filtered data
       min_diff_row <- filtered_data[which.min(filtered_data$delta_diff), ]
-      min_diff_row$likelihood_shift <- obs_pred_shifted$likelihood[as.numeric(rownames(min_diff_row))]
-      min_diff_row$likelihood_no_shift <- obs_pred_no_shifted$likelihood
+      min_diff_row$likelihood_shift <- obs_pred_shifted[as.numeric(rownames(min_diff_row))]
+      min_diff_row$likelihood_no_shift <- obs_pred_no_shifted
       min_diff_row$delta <- min_diff_row[, exposure] - obs_data[, exposure]
 
       aggregate_results <- rbind(aggregate_results, min_diff_row)

@@ -33,7 +33,11 @@ Imports:
     purrr,
     polspline,
     pracma,
-    haldensify
+    haldensify,
+    ranger,
+    arm,
+    xgboost,
+    nnls
 Suggests: 
     rmarkdown,
     knitr,

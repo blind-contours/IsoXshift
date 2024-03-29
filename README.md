@@ -95,9 +95,9 @@ insights effectively.
 `IsoXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
 in the estimation process. If the user does not specify any stack
-parameters, `InterXshift` will automatically create an ensemble of
-machine learning algorithms that strike a balance between flexibility
-and computational efficiency.
+parameters, `IsoXshift` will automatically create an ensemble of machine
+learning algorithms that strike a balance between flexibility and
+computational efficiency.
 
 ------------------------------------------------------------------------
 
@@ -108,26 +108,9 @@ that allows ensemble machine learning to be used for nuisance parameter
 estimation and `sl3` is not on CRAN the `IsoXshift` package is not
 available on CRAN and must be downloaded here.
 
-There are many depedencies for `IsoXshift` so it’s easier to break up
-installation of the various packages to ensure proper installation.
-
-First install the basis estimators used in the data-adaptive variable
-discovery of the exposure and covariate space:
-
-``` r
-install.packages("earth")
-install.packages("hal9001")
-```
-
 `IsoXshift` uses the `sl3` package to build ensemble machine learners
 for each nuisance parameter. We have to install off the development
 branch, first download these two packages for `sl3`
-
-``` r
-install.packages(c("ranger", "arm", "xgboost", "nnls"))
-```
-
-Now install `sl3` on devel:
 
 ``` r
 remotes::install_github("tlverse/sl3@devel")
@@ -137,13 +120,6 @@ Make sure `sl3` installs correctly then install `IsoXshift`
 
 ``` r
 remotes::install_github("blind-contours/IsoXshift@main")
-```
-
-`IsoXshift` has some other miscellaneous dependencies that are used in
-the examples as well as in the plotting functions.
-
-``` r
-install.packages(c("kableExtra", "hrbrthemes", "viridis"))
 ```
 
 ------------------------------------------------------------------------
@@ -443,7 +419,7 @@ W
 Let’s look at the interactions built into this synthetic data:
 
 <figure>
-<img src="man/figures/NIEHS_interactions.png"
+<img src="%22man/figures/NIEHS_interactions.png%22"
 alt="NIEHS Interactions" />
 <figcaption aria-hidden="true">NIEHS Interactions</figcaption>
 </figure>
@@ -459,77 +435,91 @@ sim_results <- IsoXshift(
   w = w,
   a = a,
   y = y,
-  n_folds = 5,
+  n_folds = 6,
   num_cores = 6,
   outcome_type = "continuous",
   seed = seed,
-  target_outcome_lvl = 15,
+  target_outcome_lvl = 12,
   epsilon = 0.5
 )
+#> Growing trees.. Progress: 47%. Estimated remaining time: 1 minute, 36 seconds.
 #> 
-#> Iter: 1 fn: 191.9358  Pars:  0.0000003908 0.9999996094
-#> Iter: 2 fn: 191.9358  Pars:  0.0000001602 0.9999998398
+#> Iter: 1 fn: 222.8222  Pars:  0.02601 0.97399
+#> Iter: 2 fn: 222.8222  Pars:  0.02601 0.97399
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 448.1996  Pars:  0.03804 0.96196
-#> Iter: 2 fn: 448.1996  Pars:  0.03804 0.96196
+#> Iter: 1 fn: 494.9785  Pars:  0.000007745 0.999992255
+#> Iter: 2 fn: 494.9785  Pars:  0.00000003548 0.99999996452
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 461.3076  Pars:  0.22580 0.77420
-#> Iter: 2 fn: 461.3076  Pars:  0.22580 0.77420
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 180.8586  Pars:  0.02992 0.97008
-#> Iter: 2 fn: 180.8586  Pars:  0.02991 0.97009
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 466.2345  Pars:  0.003087 0.996913
-#> Iter: 2 fn: 466.2345  Pars:  0.002355 0.997645
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 464.6877  Pars:  0.999994892 0.000005108
-#> Iter: 2 fn: 464.6877  Pars:  0.999998399 0.000001601
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 199.3252  Pars:  0.00000004247 0.99999995594
-#> Iter: 2 fn: 199.3252  Pars:  0.0000000009188 0.9999999990812
-#> Iter: 3 fn: 199.3252  Pars:  0.0000000005678 0.9999999994322
+#> Iter: 1 fn: 487.6227  Pars:  0.999994298 0.000005701
+#> Iter: 2 fn: 487.6227  Pars:  0.9999991589 0.0000008411
+#> Iter: 3 fn: 487.6227  Pars:  0.9999994859 0.0000005141
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 453.2732  Pars:  0.06791 0.93209
-#> Iter: 2 fn: 453.2732  Pars:  0.06788 0.93212
+#> Iter: 1 fn: 226.2807  Pars:  0.05745 0.94255
+#> Iter: 2 fn: 226.2807  Pars:  0.05745 0.94255
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 451.6012  Pars:  0.05533 0.94467
-#> Iter: 2 fn: 451.6012  Pars:  0.05532 0.94468
+#> Iter: 1 fn: 484.0375  Pars:  0.0000005784 0.9999994218
+#> Iter: 2 fn: 484.0375  Pars:  0.0000001083 0.9999998917
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 222.6728  Pars:  0.000000003476 0.999999995710
-#> Iter: 2 fn: 222.6728  Pars:  0.000000002283 0.999999997717
+#> Iter: 1 fn: 479.8223  Pars:  0.37822 0.62178
+#> Iter: 2 fn: 479.8223  Pars:  0.37820 0.62180
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 453.2119  Pars:  0.12281 0.87719
-#> Iter: 2 fn: 453.2119  Pars:  0.12282 0.87718
+#> Iter: 1 fn: 221.0642  Pars:  0.00000005466 0.99999994546
+#> Iter: 2 fn: 221.0642  Pars:  0.00000003637 0.99999996363
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 459.0837  Pars:  0.40415 0.59585
-#> Iter: 2 fn: 459.0837  Pars:  0.40415 0.59585
+#> Iter: 1 fn: 496.3027  Pars:  0.21429 0.78571
+#> Iter: 2 fn: 496.3027  Pars:  0.21398 0.78602
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 224.4303  Pars:  0.05369 0.94631
-#> Iter: 2 fn: 224.4303  Pars:  0.05369 0.94631
+#> Iter: 1 fn: 491.9260  Pars:  0.0000125 0.9999875
+#> Iter: 2 fn: 491.9260  Pars:  0.000007487 0.999992513
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 484.9169  Pars:  0.37866 0.62134
-#> Iter: 2 fn: 484.9169  Pars:  0.37866 0.62134
+#> Iter: 1 fn: 104.6614  Pars:  0.08134 0.91866
+#> Iter: 2 fn: 104.6614  Pars:  0.08134 0.91866
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 488.1615  Pars:  0.99999415 0.00000585
-#> Iter: 2 fn: 488.1614  Pars:  0.9999997443 0.0000002557
+#> Iter: 1 fn: 495.9732  Pars:  0.41785 0.58215
+#> Iter: 2 fn: 495.9732  Pars:  0.41785 0.58215
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 495.9761  Pars:  0.9999993936 0.0000006071
+#> Iter: 2 fn: 495.9761  Pars:  0.9999996437 0.0000003563
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 220.9891  Pars:  0.00000000428 0.99999999571
+#> Iter: 2 fn: 220.9891  Pars:  0.00000000105 0.99999999895
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 496.7959  Pars:  0.32776 0.67224
+#> Iter: 2 fn: 496.7959  Pars:  0.32777 0.67223
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 498.7841  Pars:  0.99999888 0.00000112
+#> Iter: 2 fn: 498.7841  Pars:  0.9999997064 0.0000002936
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 235.0054  Pars:  0.03661 0.96339
+#> Iter: 2 fn: 235.0054  Pars:  0.03661 0.96339
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 492.8295  Pars:  0.999995555 0.000004445
+#> Iter: 2 fn: 492.8295  Pars:  0.999998947 0.000001053
+#> Iter: 3 fn: 492.8295  Pars:  0.9999995304 0.0000004696
+#> solnp--> Completed in 3 iterations
+#> 
+#> Iter: 1 fn: 491.7396  Pars:  0.9999963 0.0000037
+#> Iter: 2 fn: 491.7396  Pars:  0.999997994 0.000002006
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
-#>    user  system elapsed 
-#>  61.051   3.082 920.514
+#>     user   system  elapsed 
+#>   89.792    5.104 1173.784
 
 oracle_parameter <- sim_results$`Oracle Pooled Results`
 k_fold_results <- sim_results$`K-fold Results`
@@ -588,25 +578,25 @@ Fold
 <tbody>
 <tr>
 <td style="text-align:right;">
--7.7985083
+-13.5086705
 </td>
 <td style="text-align:right;">
-0.3650333
+0.0273477
 </td>
 <td style="text-align:right;">
-0.6041799
+0.1653715
 </td>
 <td style="text-align:right;">
--8.9827
+-13.8328
 </td>
 <td style="text-align:right;">
--6.6143
+-13.1845
 </td>
 <td style="text-align:right;">
 0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 X1
@@ -617,28 +607,28 @@ X1
 </tr>
 <tr>
 <td style="text-align:right;">
--5.3648883
+-12.1225847
 </td>
 <td style="text-align:right;">
-0.5524979
+0.2853685
 </td>
 <td style="text-align:right;">
-0.7433020
+0.5341989
 </td>
 <td style="text-align:right;">
--6.8217
+-13.1696
 </td>
 <td style="text-align:right;">
--3.9080
+-11.0756
 </td>
 <td style="text-align:right;">
 0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
-X7
+X5
 </td>
 <td style="text-align:right;">
 1
@@ -646,28 +636,28 @@ X7
 </tr>
 <tr>
 <td style="text-align:right;">
--12.4305447
+-14.7686203
 </td>
 <td style="text-align:right;">
-0.2108756
+0.0086283
 </td>
 <td style="text-align:right;">
-0.4592119
+0.0928884
 </td>
 <td style="text-align:right;">
--13.3306
+-14.9507
 </td>
 <td style="text-align:right;">
--11.5305
+-14.5866
 </td>
 <td style="text-align:right;">
 0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
-X1-X7
+X1-X5
 </td>
 <td style="text-align:right;">
 1
@@ -675,25 +665,25 @@ X1-X7
 </tr>
 <tr>
 <td style="text-align:right;">
-0.7328519
+10.8626348
 </td>
 <td style="text-align:right;">
-0.9416103
+0.1947857
 </td>
 <td style="text-align:right;">
-0.9703661
+0.4413453
 </td>
 <td style="text-align:right;">
--1.1690
+9.9976
 </td>
 <td style="text-align:right;">
-2.6347
+11.7277
 </td>
 <td style="text-align:right;">
-0.4569019
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 Interaction
@@ -704,25 +694,25 @@ Interaction
 </tr>
 <tr>
 <td style="text-align:right;">
-1.5574047
+0.7719493
 </td>
 <td style="text-align:right;">
-0.7113273
+0.9860012
 </td>
 <td style="text-align:right;">
-0.8434022
+0.9929759
 </td>
 <td style="text-align:right;">
--0.0956
+-1.1742
 </td>
 <td style="text-align:right;">
-3.2104
+2.7181
 </td>
 <td style="text-align:right;">
-0.0899167
+0.4385318
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 X1
@@ -733,25 +723,25 @@ X1
 </tr>
 <tr>
 <td style="text-align:right;">
--0.1970893
+0.9442252
 </td>
 <td style="text-align:right;">
-0.5760383
+0.6999801
 </td>
 <td style="text-align:right;">
-0.7589719
+0.8366482
 </td>
 <td style="text-align:right;">
--1.6846
+-0.6956
 </td>
 <td style="text-align:right;">
-1.2905
+2.5840
 </td>
 <td style="text-align:right;">
-0.8210225
+0.3019336
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 X5
@@ -762,25 +752,25 @@ X5
 </tr>
 <tr>
 <td style="text-align:right;">
-5.6273123
+10.2589986
 </td>
 <td style="text-align:right;">
-1.2451360
+1.5165367
 </td>
 <td style="text-align:right;">
-1.1158566
+1.2314774
 </td>
 <td style="text-align:right;">
-3.4403
+7.8453
 </td>
 <td style="text-align:right;">
-7.8144
+12.6726
 </td>
 <td style="text-align:right;">
-0.0000001
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 X1-X5
@@ -791,25 +781,25 @@ X1-X5
 </tr>
 <tr>
 <td style="text-align:right;">
-4.2669968
+8.5428240
 </td>
 <td style="text-align:right;">
-0.7166617
+1.0429063
 </td>
 <td style="text-align:right;">
-0.8465587
+1.0212279
 </td>
 <td style="text-align:right;">
-2.6078
+6.5413
 </td>
 <td style="text-align:right;">
-5.9262
+10.5444
 </td>
 <td style="text-align:right;">
-0.0000035
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+84
 </td>
 <td style="text-align:left;">
 Interaction
@@ -820,25 +810,25 @@ Interaction
 </tr>
 <tr>
 <td style="text-align:right;">
--3.4628004
+-0.6416571
 </td>
 <td style="text-align:right;">
-0.2162710
+0.6609212
 </td>
 <td style="text-align:right;">
-0.4650495
+0.8129706
 </td>
 <td style="text-align:right;">
--4.3743
+-2.2351
 </td>
 <td style="text-align:right;">
--2.5513
+0.9517
 </td>
 <td style="text-align:right;">
-0.0000004
+0.4766824
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 X1
@@ -849,28 +839,28 @@ X1
 </tr>
 <tr>
 <td style="text-align:right;">
--4.2561526
+-2.2660756
 </td>
 <td style="text-align:right;">
-0.3320851
+0.6944661
 </td>
 <td style="text-align:right;">
-0.5762682
+0.8333463
 </td>
 <td style="text-align:right;">
--5.3856
+-3.8994
 </td>
 <td style="text-align:right;">
--3.1267
+-0.6327
 </td>
 <td style="text-align:right;">
-0.0000000
+0.0130522
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
-X7
+X5
 </td>
 <td style="text-align:right;">
 3
@@ -878,28 +868,28 @@ X7
 </tr>
 <tr>
 <td style="text-align:right;">
--8.7301492
+2.7737158
 </td>
 <td style="text-align:right;">
-0.1102324
+1.7005188
 </td>
 <td style="text-align:right;">
-0.3320127
+1.3040394
 </td>
 <td style="text-align:right;">
--9.3809
+0.2178
 </td>
 <td style="text-align:right;">
--8.0794
+5.3296
 </td>
 <td style="text-align:right;">
-0.0000000
+0.0151431
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
-X1-X7
+X1-X5
 </td>
 <td style="text-align:right;">
 3
@@ -907,25 +897,25 @@ X1-X7
 </tr>
 <tr>
 <td style="text-align:right;">
--1.0111963
+5.6814485
 </td>
 <td style="text-align:right;">
-0.6838574
+0.4304117
 </td>
 <td style="text-align:right;">
-0.8269567
+0.6560577
 </td>
 <td style="text-align:right;">
--2.6320
+4.3956
 </td>
 <td style="text-align:right;">
-0.6096
+6.9673
 </td>
 <td style="text-align:right;">
-0.2661499
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 Interaction
@@ -936,25 +926,25 @@ Interaction
 </tr>
 <tr>
 <td style="text-align:right;">
--1.4784270
+-0.9763588
 </td>
 <td style="text-align:right;">
-0.2494608
+1.0797738
 </td>
 <td style="text-align:right;">
-0.4994605
+1.0391217
 </td>
 <td style="text-align:right;">
--2.4574
+-3.0130
 </td>
 <td style="text-align:right;">
--0.4995
+1.0603
 </td>
 <td style="text-align:right;">
-0.0364438
+0.3381620
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 X1
@@ -965,57 +955,28 @@ X1
 </tr>
 <tr>
 <td style="text-align:right;">
--3.8400742
+8.4683426
 </td>
 <td style="text-align:right;">
-0.6397796
+1.0442643
 </td>
 <td style="text-align:right;">
-0.7998622
+1.0218925
 </td>
 <td style="text-align:right;">
--5.4078
+6.4655
 </td>
 <td style="text-align:right;">
--2.2724
-</td>
-<td style="text-align:right;">
-0.0000176
-</td>
-<td style="text-align:right;">
-100
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
--4.7133492
-</td>
-<td style="text-align:right;">
-0.4546646
-</td>
-<td style="text-align:right;">
-0.6742882
-</td>
-<td style="text-align:right;">
--6.0349
-</td>
-<td style="text-align:right;">
--3.3918
+10.4712
 </td>
 <td style="text-align:right;">
 0.0000000
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
-X1-X7
+X5
 </td>
 <td style="text-align:right;">
 4
@@ -1023,25 +984,54 @@ X1-X7
 </tr>
 <tr>
 <td style="text-align:right;">
-0.6051520
+5.4460469
 </td>
 <td style="text-align:right;">
-0.5220826
+1.9400116
 </td>
 <td style="text-align:right;">
-0.7225528
+1.3928430
 </td>
 <td style="text-align:right;">
--0.8110
+2.7161
 </td>
 <td style="text-align:right;">
-2.0213
+8.1760
 </td>
 <td style="text-align:right;">
-0.4765158
+0.0000039
 </td>
 <td style="text-align:right;">
-100
+83
+</td>
+<td style="text-align:left;">
+X1-X5
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-2.0459369
+</td>
+<td style="text-align:right;">
+0.7792955
+</td>
+<td style="text-align:right;">
+0.8827772
+</td>
+<td style="text-align:right;">
+-3.7761
+</td>
+<td style="text-align:right;">
+-0.3157
+</td>
+<td style="text-align:right;">
+0.0294401
+</td>
+<td style="text-align:right;">
+83
 </td>
 <td style="text-align:left;">
 Interaction
@@ -1052,25 +1042,25 @@ Interaction
 </tr>
 <tr>
 <td style="text-align:right;">
-0.7227610
+-9.3113201
 </td>
 <td style="text-align:right;">
-0.9085103
+0.1582846
 </td>
 <td style="text-align:right;">
-0.9531581
+0.3978500
 </td>
 <td style="text-align:right;">
--1.1454
+-10.0911
 </td>
 <td style="text-align:right;">
-2.5909
+-8.5315
 </td>
 <td style="text-align:right;">
-0.4591133
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 X1
@@ -1081,25 +1071,25 @@ X1
 </tr>
 <tr>
 <td style="text-align:right;">
--1.1737772
+-6.3934531
 </td>
 <td style="text-align:right;">
-1.1133541
+1.0026758
 </td>
 <td style="text-align:right;">
-1.0551560
+1.0013370
 </td>
 <td style="text-align:right;">
--3.2418
+-8.3560
 </td>
 <td style="text-align:right;">
-0.8943
+-4.4309
 </td>
 <td style="text-align:right;">
-0.2531685
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 X5
@@ -1110,25 +1100,25 @@ X5
 </tr>
 <tr>
 <td style="text-align:right;">
--0.1053973
+-16.1190466
 </td>
 <td style="text-align:right;">
-0.9655426
+0.1048507
 </td>
 <td style="text-align:right;">
-0.9826203
+0.3238066
 </td>
 <td style="text-align:right;">
--2.0313
+-16.7537
 </td>
 <td style="text-align:right;">
-1.8205
+-15.4844
 </td>
 <td style="text-align:right;">
-0.9153243
+0.0000000
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 X1-X5
@@ -1139,31 +1129,147 @@ X1-X5
 </tr>
 <tr>
 <td style="text-align:right;">
-0.3456190
+-0.4142735
 </td>
 <td style="text-align:right;">
-1.4373164
+1.3869984
 </td>
 <td style="text-align:right;">
-1.1988813
+1.1777090
 </td>
 <td style="text-align:right;">
--2.0041
+-2.7225
 </td>
 <td style="text-align:right;">
-2.6954
+1.8940
 </td>
 <td style="text-align:right;">
-0.7522662
+0.7026539
 </td>
 <td style="text-align:right;">
-100
+83
 </td>
 <td style="text-align:left;">
 Interaction
 </td>
 <td style="text-align:right;">
 5
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-6.2074296
+</td>
+<td style="text-align:right;">
+0.1879825
+</td>
+<td style="text-align:right;">
+0.4335695
+</td>
+<td style="text-align:right;">
+-7.0572
+</td>
+<td style="text-align:right;">
+-5.3576
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+83
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-5.4070107
+</td>
+<td style="text-align:right;">
+0.5718131
+</td>
+<td style="text-align:right;">
+0.7561833
+</td>
+<td style="text-align:right;">
+-6.8891
+</td>
+<td style="text-align:right;">
+-3.9249
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+83
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-13.2608365
+</td>
+<td style="text-align:right;">
+0.1036790
+</td>
+<td style="text-align:right;">
+0.3219922
+</td>
+<td style="text-align:right;">
+-13.8919
+</td>
+<td style="text-align:right;">
+-12.6297
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+83
+</td>
+<td style="text-align:left;">
+X1-X5
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+-1.6463962
+</td>
+<td style="text-align:right;">
+1.2525969
+</td>
+<td style="text-align:right;">
+1.1191948
+</td>
+<td style="text-align:right;">
+-3.8400
+</td>
+<td style="text-align:right;">
+0.5472
+</td>
+<td style="text-align:right;">
+0.1196468
+</td>
+<td style="text-align:right;">
+83
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+<td style="text-align:right;">
+6
 </td>
 </tr>
 </tbody>
@@ -1219,31 +1325,60 @@ Difference
 <tbody>
 <tr>
 <td style="text-align:left;">
-9
+1
 </td>
 <td style="text-align:left;">
 X1
 </td>
 <td style="text-align:left;">
-X7
+X5
 </td>
 <td style="text-align:right;">
-1.127339
+1.155827
 </td>
 <td style="text-align:right;">
-1.126352
+1.242123
 </td>
 <td style="text-align:right;">
-0.7604973
+0.0566475
 </td>
 <td style="text-align:right;">
-0.0426858
+3.414815
 </td>
 <td style="text-align:right;">
-0.7252537
+1.635936
 </td>
 <td style="text-align:right;">
-0.1637156
+0.0668849
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+1.147629
+</td>
+<td style="text-align:right;">
+1.218358
+</td>
+<td style="text-align:right;">
+0.0481946
+</td>
+<td style="text-align:right;">
+3.414815
+</td>
+<td style="text-align:right;">
+1.647946
+</td>
+<td style="text-align:right;">
+0.3846076
 </td>
 </tr>
 <tr>
@@ -1257,85 +1392,27 @@ X1
 X5
 </td>
 <td style="text-align:right;">
-1.175058
+1.143893
 </td>
 <td style="text-align:right;">
-1.214526
+1.235131
 </td>
 <td style="text-align:right;">
 0.0481946
 </td>
 <td style="text-align:right;">
-1.7690362
+3.155947
 </td>
 <td style="text-align:right;">
-0.8406866
+1.508257
 </td>
 <td style="text-align:right;">
-0.1274489
+0.0206467
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-13
-</td>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-1.124548
-</td>
-<td style="text-align:right;">
-1.143164
-</td>
-<td style="text-align:right;">
-0.7877847
-</td>
-<td style="text-align:right;">
-0.0426858
-</td>
-<td style="text-align:right;">
-0.7186205
-</td>
-<td style="text-align:right;">
-0.2180422
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-10
-</td>
-<td style="text-align:left;">
-X1
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-1.158695
-</td>
-<td style="text-align:right;">
-1.120035
-</td>
-<td style="text-align:right;">
-0.7806664
-</td>
-<td style="text-align:right;">
-0.0426858
-</td>
-<td style="text-align:right;">
-0.7276892
-</td>
-<td style="text-align:right;">
-0.1428271
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-8
+21
 </td>
 <td style="text-align:left;">
 X1
@@ -1344,22 +1421,80 @@ X1
 X5
 </td>
 <td style="text-align:right;">
-1.124724
+1.124229
 </td>
 <td style="text-align:right;">
-1.266117
+1.236977
+</td>
+<td style="text-align:right;">
+0.2923519
+</td>
+<td style="text-align:right;">
+3.155947
+</td>
+<td style="text-align:right;">
+1.375423
+</td>
+<td style="text-align:right;">
+0.2560524
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+11
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+1.140465
+</td>
+<td style="text-align:right;">
+1.249656
 </td>
 <td style="text-align:right;">
 0.0481946
 </td>
 <td style="text-align:right;">
-1.3438657
+2.751177
 </td>
 <td style="text-align:right;">
-0.5771388
+1.296896
 </td>
 <td style="text-align:right;">
-0.3894339
+0.4992674
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+12
+</td>
+<td style="text-align:left;">
+X1
+</td>
+<td style="text-align:left;">
+X5
+</td>
+<td style="text-align:right;">
+1.140439
+</td>
+<td style="text-align:right;">
+1.240693
+</td>
+<td style="text-align:right;">
+0.0481946
+</td>
+<td style="text-align:right;">
+2.897264
+</td>
+<td style="text-align:right;">
+1.374408
+</td>
+<td style="text-align:right;">
+0.1197868
 </td>
 </tr>
 </tbody>
@@ -1419,19 +1554,19 @@ Fold
 <tbody>
 <tr>
 <td style="text-align:right;">
--3.5934354
+-4.500727
 </td>
 <td style="text-align:right;">
-0.0927634
+0.0942057
 </td>
 <td style="text-align:right;">
-0.3045709
+0.3069295
 </td>
 <td style="text-align:right;">
--4.1904
+-5.1023
 </td>
 <td style="text-align:right;">
--2.9965
+-3.8992
 </td>
 <td style="text-align:right;">
 0.0000000
@@ -1448,22 +1583,22 @@ Pooled TMLE
 </tr>
 <tr>
 <td style="text-align:right;">
--3.5312376
+-5.274783
 </td>
 <td style="text-align:right;">
-0.1847595
+0.1789838
 </td>
 <td style="text-align:right;">
-0.4298366
+0.4230647
 </td>
 <td style="text-align:right;">
--4.3737
+-6.1040
 </td>
 <td style="text-align:right;">
--2.6888
+-4.4456
 </td>
 <td style="text-align:right;">
-0.0000001
+0.0000000
 </td>
 <td style="text-align:right;">
 500
@@ -1477,19 +1612,19 @@ Pooled TMLE
 </tr>
 <tr>
 <td style="text-align:right;">
--7.0006181
+-8.023789
 </td>
 <td style="text-align:right;">
-0.0668611
+0.0973612
 </td>
 <td style="text-align:right;">
-0.2585751
+0.3120275
 </td>
 <td style="text-align:right;">
--7.5074
+-8.6354
 </td>
 <td style="text-align:right;">
--6.4938
+-7.4122
 </td>
 <td style="text-align:right;">
 0.0000000
@@ -1506,22 +1641,22 @@ Pooled TMLE
 </tr>
 <tr>
 <td style="text-align:right;">
-0.1240548
+1.751721
 </td>
 <td style="text-align:right;">
-0.2169933
+0.1782565
 </td>
 <td style="text-align:right;">
-0.4658254
+0.4222043
 </td>
 <td style="text-align:right;">
--0.7889
+0.9242
 </td>
 <td style="text-align:right;">
-1.0371
+2.5792
 </td>
 <td style="text-align:right;">
-0.8557698
+0.0070199
 </td>
 <td style="text-align:right;">
 500

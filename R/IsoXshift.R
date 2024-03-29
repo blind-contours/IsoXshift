@@ -104,7 +104,7 @@ IsoXshift <- function(w,
                       num_cores = 2,
                       seed = seed,
                       hn_trunc_thresh = 10,
-                      top_n = 2) {
+                      top_n = 1) {
 
   # coerce W to matrix and, if no names in W, assign them generically
   if (!is.data.frame(w)) w <- as.data.frame(w)
@@ -190,7 +190,7 @@ IsoXshift <- function(w,
 
   pie_min_effort_shift <- list()
 
-  fold_InterXshift_results <- furrr::future_map(
+  fold_IsoXshift_results <- furrr::future_map(
     unique(data_internal$folds), function(fold_k) {
       fold_intxn_results <- fold_basis_results[[fold_k]]
 
@@ -295,7 +295,7 @@ IsoXshift <- function(w,
     .options = furrr::furrr_options(seed = seed, packages = "IsoXshift")
   )
 
-  fold_min_shift_results <- unlist(fold_InterXshift_results, recursive = FALSE)
+  fold_min_shift_results <- unlist(fold_IsoXshift_results, recursive = FALSE)
 
 
   pooled_synergy_shift_results <- calc_pooled_intxn_shifts(
