@@ -30,7 +30,7 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 
 ## What’s `IsoXshift`?
 
-![](https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png)
+<img src="https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png" width="48">
 
 
 The `IsoXshift` R package offers an approach which identifies the
