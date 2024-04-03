@@ -2,13 +2,8 @@
 % Please edit documentation in R/IsoXshift.R
 \name{IsoXshift}
 \alias{IsoXshift}
-\title{Data-adaptive estimation of interactions, effect modification, and
-mediation using stochastic shift intervention target parameters. In many mixed exposure settings,
-interactions in the mixture, effect modifiers in the covariates that modify the
-impact of an exposure and mediating pathways from exposure to outcome are generally unknown. IsoXshift finds these variable sets
-on one part of the data and estimates counterfactual outcome changes given shifts to exposure on an estimation part of the data.
-Using cross-validation and targeted learning, estimators are created that utlize machine learning that are unbiased and have the
-minimum variance.}
+\title{IsoXShift: Data-adaptive discovery of minimal interventions in a mixed exposure that efficiently
+result in a target outcome.}
 \usage{
 IsoXshift(
   w,
@@ -27,7 +22,7 @@ IsoXshift(
   num_cores = 2,
   seed = seed,
   hn_trunc_thresh = 10,
-  top_n = 2
+  top_n = 1
 )
 }
 \arguments{
@@ -67,73 +62,26 @@ g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg
 \item{z}{\code{matrix}, \code{data.frame}, or similar containing individual or
 multiple mediators (optional).}
 
-\item{deltas}{A \code{numeric} value indicating the shift in exposures to
-define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
-is true, these values will be reduced.}
-
-\item{var_sets}{A list specifying variable sets for deterministic IsoXshift usage.
-Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
-for exposures, exposure-mediator, or exposure-covariate relationships.}
-
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
 
-\item{e_learner}{Learners for fitting Super Learner ensembles to the e-mechanism
-g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
-
 \item{zeta_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..}
-
-\item{mediator_type}{Data type of the mediator, default is "continuous".}
-
-\item{quantile_thresh}{Threshold based on quantiles of the F-statistic, used to
-identify "important" basis functions in the data-adaptive procedure.}
-
-\item{verbose}{Whether to run verbosely (default: FALSE).}
-
-\item{adaptive_delta}{If TRUE, reduces the user-specified delta until
-the Hn calculated for a shift does not have any observation greater
-than hn_trunc_thresh (default: FALSE).}
-
-\item{n_mc_sample}{Number of iterations to be used for the Monte Carlo integration
-procedure when using continuous exposures (default: 1000).}
-
-\item{exposure_quantized}{Whether the exposure has been discretized into bins,
-in which case the integration procedure is skipped and weighted sums are used instead (default: FALSE).}
-
-\item{mediator_quantized}{If the mediator is discretized, a multinomial ML function
-is used in this regression to avoid density estimation (default: FALSE).}
-
-\item{density_type}{Type of density estimation to be used: "sl" for Super Learner
-(default) or "hal" for highly adaptive lasso.}
-
-\item{n_bins}{Number of bins for quantizing the exposure if mediation is detected (default: 10).}
-
-\item{max_degree}{Maximum degree of interactions used in the highly adaptive lasso
-density estimator if used (default: 1).}
-
-\item{integration_method}{Type of integration to be used in the continuous exposure
-case: "MC" for Monte Carlo integration (default) or "AQ" for adaptive quadrature.}
-
-\item{use_multinomial}{Whether to use multinomial regression for binned exposures
-(default: FALSE).}
-
-\item{discover_only}{TRUE/FALSE. If TRUE, only the data-adaptive path discovery
-is done. No estimates are delivered only exposure mediator sets. If FALSE paths
-are both discovered and estimated.}
 }
 \value{
 An S3 object of class \code{IsoXshift} containing the results of the
 procedure to compute a TML or one-step estimate of the counterfactual mean
 under a modified treatment policy that shifts a continuous-valued exposure
-by a scalar amount \code{delta}. These exposures are data-adaptively
+by a scalar amount \code{delta} that is determined. These exposures are data-adaptively
 identified using the CV-TMLE procedure.
 }
 \description{
-The IsoXshift function provides an efficient approach to estimate
-interactions, effect modification, and mediation using targeted minimum loss
-estimators for counterfactual mean differences under various target parameters.
-The procedure employs data-adaptive ensemble b-spline models and stochastic interventions,
-leveraging the \pkg{sl3} package for ensemble machine learning. The data is split into V folds, in each fold
-the training data is used to find variable sets using flexible basis function estimators. Given the different variable sets,
-stochastic intervention target parameters are applied with cross-validated targeted learning.
+The IsoXshift function first identifies two exposure levels which most efficiently result in a
+target outcome. These are the two exposure levels that are closest the the exposure means, that is, need
+minimal intervention to achieve a target outcome level. These we call the oracle point parameter which reflects
+the most efficient intervention strategy. Given in the real world, we cannot set people's exposures to a specific level
+in the whole population, we simulate an intervention strategy where individuals are shifted as close as possible to
+this oracle point parameter without violating positivity, the conditional probability of being exposed to these new exposure
+levels does not deviate from the likelihood under observed exposure levels. IsoXshift outputs the expected outcome
+under joint shift, individual shifts, and compares the expectation under joint shift to the sum of individual shifts.
+This type of interaction parameter is similar to isobolic interactions in toxicology.
 }

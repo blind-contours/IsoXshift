@@ -2,7 +2,7 @@
 % Please edit documentation in R/find_min_concentrations.R
 \name{find_min_concentrations}
 \alias{find_min_concentrations}
-\title{Data-adaptive Discovery of Interactions Based on Joint vs. Individual Shift Interventions}
+\title{Data adaptively discover the shift interventions that require minimal change to achieve target outcome}
 \usage{
 find_min_concentrations(
   data,
@@ -45,10 +45,9 @@ A list containing the top effects and interactions identified and estimated by t
 It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
 }
 \description{
-The \code{find_synergy_antagonism} function provides a g-computation approach to finding interactions.
-This implementation fits an SL and then predicts two way joint shifts in exposures and compares this to individual shifts,
-ranks the interactions based on the difference and then this becomes the interactions we want to estimate
-using CV-TMLE.
+The \code{find_min_concentrations} function provides a g-computation approach to finding minimal shift interventions.
+This function fits a super learner, then for a grid of exposure levels, predicts the expected outcome. It selects the exposure levels
+which produce an outcome target within epsilon which are closest to the exposure averages under no shift.
 }
 \examples{
 \dontrun{
