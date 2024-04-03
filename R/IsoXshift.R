@@ -194,6 +194,11 @@ IsoXshift <- function(w,
         joint_gn_exp_estims[[3]]$likelihood_no_shift /
           joint_gn_exp_estims[[3]]$likelihood_shift
 
+      var_1_ave_delta <- round(mean(joint_gn_exp_estims[[1]]$delta), 3)
+      var_2_ave_delta <- round(mean(joint_gn_exp_estims[[2]]$delta), 3)
+
+      ave_deltas <- c(var_1_ave_delta, var_2_ave_delta, paste(var_1_ave_delta, var_2_ave_delta, sep = "-"), paste(var_1_ave_delta, var_2_ave_delta, sep = "-"))
+
       covars <- c(a_names, w_names)
 
       joint_qn_estims <- joint_stoch_shift_est_Q(
@@ -238,6 +243,8 @@ IsoXshift <- function(w,
         fold_k = fold_k,
         exposures = exposures
       )
+
+      syngery_in_fold$`Average Delta` <- ave_deltas
 
       pie_min_effort_shift[[
         paste("fold", fold_k, ":", paste(var1, var2, sep = "-"))

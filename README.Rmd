@@ -43,14 +43,25 @@ The `IsoXshift` R package offers an approach which identifies the minimum effort
 
 From a policy perspective, this parameter represents the most efficient intervention that can be done on a mixed exposure to get to a desired outcome. This is because, for a collection of possible interventions or changes to pollutants, for example, we find the exposure set that most efficiently results in an expected outcome close to our desired outcome. Efficient here means the exposure(s) need to be shifted the least to get to a desired outcome, like pre-industry levels of thyroid cancer etc. 
 
+
+## Realistic Interventions
+
+
 This package first identifies the most efficient intervention policy that gets to a desired outcome using g-computation which results in two exposure levels a set of exposures should be set to. Because it's unrealistic to set a population to this specific oracle intervention, because the likelihood of certain individuals exposed to this level may be near 0, we instead estimate the effects of the policy if we were to get everyone as close as possible to this oracle level. This is done by finding an intervention level as close to the oracle level as possible under some restrictions that the individual conditional likelihood of being exposed doesn't move too far away from their observed levels. 
 
 
 We the estimate the impact of our "intention to intervene" using CV-TMLE. Using this oracle point paramater as our target we shift individuals as close as possible to this level without violating the density ratio, the intervention level exposure likelihood compared to observed level likelihood. Thus, each individuals actual intervention is different but is aimed towards the target, hence intention to intervene. 
 
-We define interaction as the counterfactual mean of the outcome under stochastic interventions of two exposures compared to the additive counterfactual mean of the two exposures intervened on independently. These interventions or exposure changes depend on naturally observed values, as described in past literature [@diaz2012population; @haneuse2013estimation], but with our new parameter in mind. Thus, what is estimated is like asking, what the expected outcome is if we were to enforce the most efficient policy intervention in a realistic setting where not everyone can actually recieve that exact exposure level or levels. 
+## Joint vs. Additive Interventions 
 
-To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the target_outcome_lvl for the outcome, epsilon, which is some allowed closeness to the target. For example, if the target outcome level is 15, and epsilon is 0.5, then interventions that lead to 15.5 are considered. The restriction limit is hn_trunc_thresh which is the allowed distance from the original exposure likelihood. 10 for example indicates that the likelihood should not be more than x10 difference from the original exposure level likelihood. That is, if an individual's likelihood is originally 0.1 given their covariate history and the likelihood of exposure to the intervened level is 0.01, this is 10 times different and would be the limit intervention. A detailed guide is provided in the vignette. With these inputs, `IsoXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
+
+We define interaction as the counterfactual mean of the outcome under stochastic interventions of two exposures compared to the additive counterfactual mean of the two exposures intervened on independently. These interventions or exposure changes depend on naturally observed values, as described in past literature [@diaz2012population; @haneuse2013estimation], but with our new parameter in mind. Thus, what is estimated is like asking, what the expected outcome is if we were to enforce the most efficient policy intervention in a realistic setting where not everyone can actually receive that exact exposure level or levels. 
+
+## Target Levels and Shifting to those Levels 
+
+To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the target_outcome_lvl for the outcome, epsilon, which is some allowed closeness to the target. For example, if the target outcome level is 15, and epsilon is 0.5, then interventions that lead to 15.5 are considered. The restriction limit is hn_trunc_thresh which is the allowed distance from the original exposure likelihood. 10 for example indicates that the likelihood should not be more than x10 difference from the original exposure level likelihood. That is, if an individual's likelihood is originally 0.1 given their covariate history and the likelihood of exposure to the intervened level is 0.01, this is 10 times different and would be the limit intervention. 
+
+A detailed guide is provided in the vignette. With these inputs, `IsoXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
 
 `IsoXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `IsoXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
 
@@ -114,10 +125,11 @@ head(NIEHS_data_1) %>%
 
 Let's look at the interactions built into this synthetic data: 
 
-![NIEHS Interactions]("man/figures/NIEHS_interactions.png")
+<img src="https://github.com/blind-contours/IsoXshift/blob/main/man/figures/NIEHS_interactions.png" width="230">
+
 
 This shows that X1 and X7 has the most synergy or super-additive effect so we might expect to find this
-relationship as the most synergistic exposure relationship based on our definition. 
+relationship as the most synergistic exposure relationship based on our definition. It is also possible that the most efficient intervention is one that intervents on an antagonistic pair, shifting positive associations higher and negative lower in the antagonistic interaction. 
 
 ```{r run IsoXshift, eval = TRUE, message=FALSE, warning=FALSE}
 
@@ -141,9 +153,11 @@ oracle_targets <- sim_results$`K Fold Oracle Targets`
 
 ```
 
-Of note: these results will be more consistent with higher folds but here we use 5 so readme builds more quickly for users. 
+Of note: these results will be more consistent with higher folds but here we use 6 so readme builds more quickly for users. 
 
-Let's first look at K fold results: 
+
+## K-fold Specific Results
+
 
 ```{r k fold results}
 k_fold_results <- do.call(rbind, k_fold_results)
@@ -154,7 +168,15 @@ k_fold_results %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-Here we see that X1-X7 are found in 3 folds and X1-X5 are found in two folds as the most synergistic relationship. This means that, to get to our target outcome of 15, with precision up to 0.5, these two exposures are found to most efficiently get to our target outcome under minimal intervention. These interventions are: 
+Here we see that X1-X5 are found in all the folds. This means that, to get to our target outcome of 15, with precision up to 0.5, these two exposures are found to most efficiently get to our target outcome under minimal intervention. 
+
+The column Psi shows the expected change in outcome under shift compared to no shift. Type indicates which variable was shifted, X1, X5, X1 and X5 and then interaction which compares X1-X5 to X1 + X5. So for example a Psi of -13.5 for X1 indicates that the outcome reduces by 13.5 when we attempt to shift X1 towards the oracle point paramter. Which in this fold is 0.05. So under a policy where we try and shift X1 towards the value 0.05 under restrictions of not violating positivity support the outcome goes down by 13.5. 
+
+The average delta column indicates the average shift away from each individuals observed exposure level in order to reach the target under restrictions. 
+
+## Oracle Point Parameters
+
+These interventions are: 
 
 ```{r oracle targets}
 oracle_targets <- do.call(rbind, oracle_targets)
@@ -162,9 +184,14 @@ oracle_targets %>%
   kbl(caption = "Oracle Targets") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
+
 Here this table shows the average exposed level for each exposure, the intervened level for both exposures, this is the level the exposures are set to which gets to the target outcome most efficiently, Avg Difference, is the average difference between the intervention and observed outcome (the "effort"), and Difference is the difference between the expected outcome under intervention and the target outcome. 
 
+What we see here is that to get to the target outcome 12, where the observed average is 53, so a significant reduction, the most efficient intervention is to reduce X1 to around 0.05 and to increase X5 (due to its antagonistic relationship) to about 3. 
+
 To get more power, we do a pooled TMLE over our findings for the intervention with minimal effort that gets to our target outcome: 
+
+## Oracle Parameter
 
 ```{r top negative results}
 oracle_parameter %>%
@@ -172,9 +199,8 @@ oracle_parameter %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-This gives pooled estimates for the shift of each variable in the relationship individually, joint and our definition of interaction comparing the expectation of the outcome under joint shift compared to the expectations under the sum of individual shifts. Of course, given inconsistencies in our findings here, the interpretation is difficult given these findings include shifts for both sets of variables X1-X7 and X1-X5. 
+This gives pooled estimates for the shift of each variable in the relationship individually, joint and our definition of interaction comparing the expectation of the outcome under joint shift compared to the expectations under the sum of individual shifts. 
 
-However, when IsoXshift is run with more folds, findings have more consistency and the pooled result represents a pooled estimate for the same exposure relationship. 
 
 
 Overall, this package finds the intervention that, with minimal effort, gets to a desired outcome in a mixed exposure. It then estimates, using CV-TMLE, a policy intervention that attempts to get a population's exposure as close as possible to this oracle intervention level without violating positivity. 
@@ -242,7 +268,9 @@ After using the `IsoXshift` R package, please cite the following:
 
 ## Funding
 
-The development of this software was supported in part through grants from the
+The development of this software was supported in part through 
+NIH grant P42ES004705 from NIEHS
+
 
 
 ---
