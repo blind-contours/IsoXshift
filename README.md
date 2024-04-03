@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`IsoXshift` <img src="man/figures/IsoXshift_sticker.png" style="float:right; height:200px;">
+# R/`IsoXshift` 
 
 <!-- badges: start -->
 
@@ -29,6 +29,9 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 ------------------------------------------------------------------------
 
 ## What’s `IsoXshift`?
+
+![](https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png)
+
 
 The `IsoXshift` R package offers an approach which identifies the
 minimum effort intervention on two exposures which, if the population

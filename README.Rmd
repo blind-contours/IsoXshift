@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`IsoXshift` <img src="man/figures/IsoXshift_sticker.png" style="float:right; height:200px;">
+# R/`IsoXshift`
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/IsoXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/IsoXshift/actions)
@@ -35,6 +35,9 @@ __Authors:__ [David McCoy](https://davidmccoy.org)
 ---
 
 ## What's `IsoXshift`?
+
+![](https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png)
+
 
 The `IsoXshift` R package offers an approach which identifies the minimum effort intervention on two exposures which, if the population were given these intervention levels, would result in a target outcome. This parameter reflects the most synergistic interaction or set of interactions in a mixed exposure. The target parameter is similar to isobolic interactions used in toxicology studies where researchers investigate how much simultaneous dose of two exposures results in a target outcome, like cancer or cell death in cultures. 
 
