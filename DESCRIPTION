@@ -32,12 +32,7 @@ Imports:
     furrr,
     purrr,
     polspline,
-    pracma,
-    haldensify,
     ranger,
-    arm,
-    xgboost,
-    nnls
 Suggests: 
     rmarkdown,
     knitr,
