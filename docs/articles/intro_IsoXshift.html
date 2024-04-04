@@ -74,7 +74,7 @@ Estimation using Data-Adaptive Stochastic Interventions</h1>
                         <h4 data-toc-skip class="author">David
 McCoy</h4>
             
-            <h4 data-toc-skip class="date">2024-03-28</h4>
+            <h4 data-toc-skip class="date">2024-04-03</h4>
       
       
       <div class="hidden name"><code>intro_IsoXshift.Rmd</code></div>
@@ -399,7 +399,7 @@ do that here:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;     user   system  elapsed </span></span>
-<span><span class="co">#&gt;  333.788  139.464 4631.168</span></span></code></pre></div>
+<span><span class="co">#&gt;  455.631  185.752 5827.649</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="k-fold-results">K Fold Results<a class="anchor" aria-label="anchor" href="#k-fold-results"></a>
@@ -444,6 +444,9 @@ Type
 <th style="text-align:right;">
 Fold
 </th>
+<th style="text-align:left;">
+Average Delta
+</th>
 </tr></thead>
 <tbody>
 <tr>
@@ -474,6 +477,9 @@ LBXF03LA
 <td style="text-align:right;">
 1
 </td>
+<td style="text-align:left;">
+-0.192
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -502,6 +508,9 @@ LBXF04LA
 </td>
 <td style="text-align:right;">
 1
+</td>
+<td style="text-align:left;">
+-0.651
 </td>
 </tr>
 <tr>
@@ -532,6 +541,9 @@ LBXF03LA-LBXF04LA
 <td style="text-align:right;">
 1
 </td>
+<td style="text-align:left;">
+-0.192–0.651
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -560,6 +572,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 1
+</td>
+<td style="text-align:left;">
+-0.192–0.651
 </td>
 </tr>
 <tr>
@@ -590,6 +605,9 @@ LBXF03LA
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:left;">
+-0.601
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -618,6 +636,9 @@ LBXF04LA
 </td>
 <td style="text-align:right;">
 2
+</td>
+<td style="text-align:left;">
+-1.023
 </td>
 </tr>
 <tr>
@@ -648,6 +669,9 @@ LBXF03LA-LBXF04LA
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:left;">
+-0.601–1.023
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -676,6 +700,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 2
+</td>
+<td style="text-align:left;">
+-0.601–1.023
 </td>
 </tr>
 <tr>
@@ -706,6 +733,9 @@ LBXF03LA
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:left;">
+-0.033
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -734,6 +764,9 @@ LBXF04LA
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:left;">
+-0.841
 </td>
 </tr>
 <tr>
@@ -764,6 +797,9 @@ LBXF03LA-LBXF04LA
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:left;">
+-0.033–0.841
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -792,6 +828,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:left;">
+-0.033–0.841
 </td>
 </tr>
 <tr>
@@ -822,6 +861,9 @@ LBXF03LA
 <td style="text-align:right;">
 4
 </td>
+<td style="text-align:left;">
+-0.335
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -850,6 +892,9 @@ LBXF04LA
 </td>
 <td style="text-align:right;">
 4
+</td>
+<td style="text-align:left;">
+-0.476
 </td>
 </tr>
 <tr>
@@ -880,6 +925,9 @@ LBXF03LA-LBXF04LA
 <td style="text-align:right;">
 4
 </td>
+<td style="text-align:left;">
+-0.335–0.476
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -908,6 +956,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 4
+</td>
+<td style="text-align:left;">
+-0.335–0.476
 </td>
 </tr>
 <tr>
@@ -938,6 +989,9 @@ LBXF03LA
 <td style="text-align:right;">
 5
 </td>
+<td style="text-align:left;">
+0.113
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -966,6 +1020,9 @@ LBXF04LA
 </td>
 <td style="text-align:right;">
 5
+</td>
+<td style="text-align:left;">
+-0.501
 </td>
 </tr>
 <tr>
@@ -996,6 +1053,9 @@ LBXF03LA-LBXF04LA
 <td style="text-align:right;">
 5
 </td>
+<td style="text-align:left;">
+0.113–0.501
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -1024,6 +1084,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 5
+</td>
+<td style="text-align:left;">
+0.113–0.501
 </td>
 </tr>
 </tbody>

@@ -69,7 +69,8 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="risoxshift-">R/<code>IsoXshift</code> <img src="reference/figures/IsoXshift_sticker.png" style="float:right; height:200px;"><a class="anchor" aria-label="anchor" href="#risoxshift-"></a>
+<div class="page-header"><h1 id="risoxshift">R/<code>IsoXshift</code>
+<a class="anchor" aria-label="anchor" href="#risoxshift"></a>
 </h1></div>
 <!-- badges: start -->
 
@@ -80,12 +81,26 @@
 <div class="section level2">
 <h2 id="whats-isoxshift">What’s <code>IsoXshift</code>?<a class="anchor" aria-label="anchor" href="#whats-isoxshift"></a>
 </h2>
+<p><img src="https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png" width="230"></p>
 <p>The <code>IsoXshift</code> R package offers an approach which identifies the minimum effort intervention on two exposures which, if the population were given these intervention levels, would result in a target outcome. This parameter reflects the most synergistic interaction or set of interactions in a mixed exposure. The target parameter is similar to isobolic interactions used in toxicology studies where researchers investigate how much simultaneous dose of two exposures results in a target outcome, like cancer or cell death in cultures.</p>
 <p>From a policy perspective, this parameter represents the most efficient intervention that can be done on a mixed exposure to get to a desired outcome. This is because, for a collection of possible interventions or changes to pollutants, for example, we find the exposure set that most efficiently results in an expected outcome close to our desired outcome. Efficient here means the exposure(s) need to be shifted the least to get to a desired outcome, like pre-industry levels of thyroid cancer etc.</p>
+</div>
+<div class="section level2">
+<h2 id="realistic-interventions">Realistic Interventions<a class="anchor" aria-label="anchor" href="#realistic-interventions"></a>
+</h2>
 <p>This package first identifies the most efficient intervention policy that gets to a desired outcome using g-computation which results in two exposure levels a set of exposures should be set to. Because it’s unrealistic to set a population to this specific oracle intervention, because the likelihood of certain individuals exposed to this level may be near 0, we instead estimate the effects of the policy if we were to get everyone as close as possible to this oracle level. This is done by finding an intervention level as close to the oracle level as possible under some restrictions that the individual conditional likelihood of being exposed doesn’t move too far away from their observed levels.</p>
 <p>We the estimate the impact of our “intention to intervene” using CV-TMLE. Using this oracle point paramater as our target we shift individuals as close as possible to this level without violating the density ratio, the intervention level exposure likelihood compared to observed level likelihood. Thus, each individuals actual intervention is different but is aimed towards the target, hence intention to intervene.</p>
-<p>We define interaction as the counterfactual mean of the outcome under stochastic interventions of two exposures compared to the additive counterfactual mean of the two exposures intervened on independently. These interventions or exposure changes depend on naturally observed values, as described in past literature (Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013), but with our new parameter in mind. Thus, what is estimated is like asking, what the expected outcome is if we were to enforce the most efficient policy intervention in a realistic setting where not everyone can actually recieve that exact exposure level or levels.</p>
-<p>To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the target_outcome_lvl for the outcome, epsilon, which is some allowed closeness to the target. For example, if the target outcome level is 15, and epsilon is 0.5, then interventions that lead to 15.5 are considered. The restriction limit is hn_trunc_thresh which is the allowed distance from the original exposure likelihood. 10 for example indicates that the likelihood should not be more than x10 difference from the original exposure level likelihood. That is, if an individual’s likelihood is originally 0.1 given their covariate history and the likelihood of exposure to the intervened level is 0.01, this is 10 times different and would be the limit intervention. A detailed guide is provided in the vignette. With these inputs, <code>IsoXshift</code> processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.</p>
+</div>
+<div class="section level2">
+<h2 id="joint-vs-additive-interventions">Joint vs. Additive Interventions<a class="anchor" aria-label="anchor" href="#joint-vs-additive-interventions"></a>
+</h2>
+<p>We define interaction as the counterfactual mean of the outcome under stochastic interventions of two exposures compared to the additive counterfactual mean of the two exposures intervened on independently. These interventions or exposure changes depend on naturally observed values, as described in past literature (Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013), but with our new parameter in mind. Thus, what is estimated is like asking, what the expected outcome is if we were to enforce the most efficient policy intervention in a realistic setting where not everyone can actually receive that exact exposure level or levels.</p>
+</div>
+<div class="section level2">
+<h2 id="target-levels-and-shifting-to-those-levels">Target Levels and Shifting to those Levels<a class="anchor" aria-label="anchor" href="#target-levels-and-shifting-to-those-levels"></a>
+</h2>
+<p>To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the target_outcome_lvl for the outcome, epsilon, which is some allowed closeness to the target. For example, if the target outcome level is 15, and epsilon is 0.5, then interventions that lead to 15.5 are considered. The restriction limit is hn_trunc_thresh which is the allowed distance from the original exposure likelihood. 10 for example indicates that the likelihood should not be more than x10 difference from the original exposure level likelihood. That is, if an individual’s likelihood is originally 0.1 given their covariate history and the likelihood of exposure to the intervened level is 0.01, this is 10 times different and would be the limit intervention.</p>
+<p>A detailed guide is provided in the vignette. With these inputs, <code>IsoXshift</code> processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.</p>
 <p><code>IsoXshift</code> also incorporates features from the <code>sl3</code> package (Coyle, Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, <code>IsoXshift</code> will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.</p>
 <hr>
 </div>
@@ -379,9 +394,8 @@ W
 </tbody>
 </table>
 <p>Let’s look at the interactions built into this synthetic data:</p>
-<figure><img src="%22man/figures/NIEHS_interactions.png%22" alt="NIEHS Interactions"><figcaption aria-hidden="true">
-NIEHS Interactions
-</figcaption></figure><p>This shows that X1 and X7 has the most synergy or super-additive effect so we might expect to find this relationship as the most synergistic exposure relationship based on our definition.</p>
+<p><img src="https://github.com/blind-contours/IsoXshift/blob/main/man/figures/NIEHS_interactions.png" width="230"></p>
+<p>This shows that X1 and X7 has the most synergy or super-additive effect so we might expect to find this relationship as the most synergistic exposure relationship based on our definition. It is also possible that the most efficient intervention is one that intervents on an antagonistic pair, shifting positive associations higher and negative lower in the antagonistic interaction.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">ptm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -396,7 +410,6 @@ NIEHS Interactions
 <span>  target_outcome_lvl <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  epsilon <span class="op">=</span> <span class="fl">0.5</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Growing trees.. Progress: 47%. Estimated remaining time: 1 minute, 36 seconds.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Iter: 1 fn: 222.8222  Pars:  0.02601 0.97399</span></span>
 <span><span class="co">#&gt; Iter: 2 fn: 222.8222  Pars:  0.02601 0.97399</span></span>
@@ -472,14 +485,17 @@ NIEHS Interactions
 <span><span class="co">#&gt; Iter: 2 fn: 491.7396  Pars:  0.999997994 0.000002006</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
-<span><span class="co">#&gt;     user   system  elapsed </span></span>
-<span><span class="co">#&gt;   89.792    5.104 1173.784</span></span>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  66.048   5.430 948.089</span></span>
 <span></span>
 <span><span class="va">oracle_parameter</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Oracle Pooled Results`</span></span>
 <span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`K-fold Results`</span></span>
 <span><span class="va">oracle_targets</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`K Fold Oracle Targets`</span></span></code></pre></div>
-<p>Of note: these results will be more consistent with higher folds but here we use 5 so readme builds more quickly for users.</p>
-<p>Let’s first look at K fold results:</p>
+<p>Of note: these results will be more consistent with higher folds but here we use 6 so readme builds more quickly for users.</p>
+</div>
+<div class="section level2">
+<h2 id="k-fold-specific-results">K-fold Specific Results<a class="anchor" aria-label="anchor" href="#k-fold-specific-results"></a>
+</h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">k_fold_results</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="va">k_fold_results</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="cn">NULL</span></span>
@@ -519,6 +535,9 @@ Type
 <th style="text-align:right;">
 Fold
 </th>
+<th style="text-align:left;">
+Average Delta
+</th>
 </tr></thead>
 <tbody>
 <tr>
@@ -549,6 +568,9 @@ X1
 <td style="text-align:right;">
 1
 </td>
+<td style="text-align:left;">
+-0.902
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -577,6 +599,9 @@ X5
 </td>
 <td style="text-align:right;">
 1
+</td>
+<td style="text-align:left;">
+2.222
 </td>
 </tr>
 <tr>
@@ -607,6 +632,9 @@ X1-X5
 <td style="text-align:right;">
 1
 </td>
+<td style="text-align:left;">
+-0.902-2.222
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -635,6 +663,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 1
+</td>
+<td style="text-align:left;">
+-0.902-2.222
 </td>
 </tr>
 <tr>
@@ -665,6 +696,9 @@ X1
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:left;">
+-0.871
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -693,6 +727,9 @@ X5
 </td>
 <td style="text-align:right;">
 2
+</td>
+<td style="text-align:left;">
+2.023
 </td>
 </tr>
 <tr>
@@ -723,6 +760,9 @@ X1-X5
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:left;">
+-0.871-2.023
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -751,6 +791,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 2
+</td>
+<td style="text-align:left;">
+-0.871-2.023
 </td>
 </tr>
 <tr>
@@ -781,6 +824,9 @@ X1
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:left;">
+-0.893
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -809,6 +855,9 @@ X5
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:left;">
+1.942
 </td>
 </tr>
 <tr>
@@ -839,6 +888,9 @@ X1-X5
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:left;">
+-0.893-1.942
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -867,6 +919,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 3
+</td>
+<td style="text-align:left;">
+-0.893-1.942
 </td>
 </tr>
 <tr>
@@ -897,6 +952,9 @@ X1
 <td style="text-align:right;">
 4
 </td>
+<td style="text-align:left;">
+-0.899
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -925,6 +983,9 @@ X5
 </td>
 <td style="text-align:right;">
 4
+</td>
+<td style="text-align:left;">
+1.941
 </td>
 </tr>
 <tr>
@@ -955,6 +1016,9 @@ X1-X5
 <td style="text-align:right;">
 4
 </td>
+<td style="text-align:left;">
+-0.899-1.941
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -983,6 +1047,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 4
+</td>
+<td style="text-align:left;">
+-0.899-1.941
 </td>
 </tr>
 <tr>
@@ -1013,6 +1080,9 @@ X1
 <td style="text-align:right;">
 5
 </td>
+<td style="text-align:left;">
+-0.939
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -1041,6 +1111,9 @@ X5
 </td>
 <td style="text-align:right;">
 5
+</td>
+<td style="text-align:left;">
+1.589
 </td>
 </tr>
 <tr>
@@ -1071,6 +1144,9 @@ X1-X5
 <td style="text-align:right;">
 5
 </td>
+<td style="text-align:left;">
+-0.939-1.589
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -1099,6 +1175,9 @@ Interaction
 </td>
 <td style="text-align:right;">
 5
+</td>
+<td style="text-align:left;">
+-0.939-1.589
 </td>
 </tr>
 <tr>
@@ -1129,6 +1208,9 @@ X1
 <td style="text-align:right;">
 6
 </td>
+<td style="text-align:left;">
+-0.858
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -1157,6 +1239,9 @@ X5
 </td>
 <td style="text-align:right;">
 6
+</td>
+<td style="text-align:left;">
+1.687
 </td>
 </tr>
 <tr>
@@ -1187,6 +1272,9 @@ X1-X5
 <td style="text-align:right;">
 6
 </td>
+<td style="text-align:left;">
+-0.858-1.687
+</td>
 </tr>
 <tr>
 <td style="text-align:right;">
@@ -1216,10 +1304,20 @@ Interaction
 <td style="text-align:right;">
 6
 </td>
+<td style="text-align:left;">
+-0.858-1.687
+</td>
 </tr>
 </tbody>
 </table>
-<p>Here we see that X1-X7 are found in 3 folds and X1-X5 are found in two folds as the most synergistic relationship. This means that, to get to our target outcome of 15, with precision up to 0.5, these two exposures are found to most efficiently get to our target outcome under minimal intervention. These interventions are:</p>
+<p>Here we see that X1-X5 are found in all the folds. This means that, to get to our target outcome of 15, with precision up to 0.5, these two exposures are found to most efficiently get to our target outcome under minimal intervention.</p>
+<p>The column Psi shows the expected change in outcome under shift compared to no shift. Type indicates which variable was shifted, X1, X5, X1 and X5 and then interaction which compares X1-X5 to X1 + X5. So for example a Psi of -13.5 for X1 indicates that the outcome reduces by 13.5 when we attempt to shift X1 towards the oracle point paramter. Which in this fold is 0.05. So under a policy where we try and shift X1 towards the value 0.05 under restrictions of not violating positivity support the outcome goes down by 13.5.</p>
+<p>The average delta column indicates the average shift away from each individuals observed exposure level in order to reach the target under restrictions.</p>
+</div>
+<div class="section level2">
+<h2 id="oracle-point-parameters">Oracle Point Parameters<a class="anchor" aria-label="anchor" href="#oracle-point-parameters"></a>
+</h2>
+<p>These interventions are:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">oracle_targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">oracle_targets</span><span class="op">)</span></span>
 <span><span class="va">oracle_targets</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1435,7 +1533,12 @@ X5
 </tbody>
 </table>
 <p>Here this table shows the average exposed level for each exposure, the intervened level for both exposures, this is the level the exposures are set to which gets to the target outcome most efficiently, Avg Difference, is the average difference between the intervention and observed outcome (the “effort”), and Difference is the difference between the expected outcome under intervention and the target outcome.</p>
+<p>What we see here is that to get to the target outcome 12, where the observed average is 53, so a significant reduction, the most efficient intervention is to reduce X1 to around 0.05 and to increase X5 (due to its antagonistic relationship) to about 3.</p>
 <p>To get more power, we do a pooled TMLE over our findings for the intervention with minimal effort that gets to our target outcome:</p>
+</div>
+<div class="section level2">
+<h2 id="oracle-parameter">Oracle Parameter<a class="anchor" aria-label="anchor" href="#oracle-parameter"></a>
+</h2>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">oracle_parameter</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Pooled Oracle Parameter"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -1592,8 +1695,7 @@ Pooled TMLE
 </tr>
 </tbody>
 </table>
-<p>This gives pooled estimates for the shift of each variable in the relationship individually, joint and our definition of interaction comparing the expectation of the outcome under joint shift compared to the expectations under the sum of individual shifts. Of course, given inconsistencies in our findings here, the interpretation is difficult given these findings include shifts for both sets of variables X1-X7 and X1-X5.</p>
-<p>However, when IsoXshift is run with more folds, findings have more consistency and the pooled result represents a pooled estimate for the same exposure relationship.</p>
+<p>This gives pooled estimates for the shift of each variable in the relationship individually, joint and our definition of interaction comparing the expectation of the outcome under joint shift compared to the expectations under the sum of individual shifts.</p>
 <p>Overall, this package finds the intervention that, with minimal effort, gets to a desired outcome in a mixed exposure. It then estimates, using CV-TMLE, a policy intervention that attempts to get a population’s exposure as close as possible to this oracle intervention level without violating positivity.</p>
 <p>In this NIEHS data set we correctly identify the most synergistic relationship built into the data.</p>
 <p>More discussion is found in the vignette.</p>
@@ -1630,7 +1732,7 @@ Pooled TMLE
 <div class="section level2">
 <h2 id="funding">Funding<a class="anchor" aria-label="anchor" href="#funding"></a>
 </h2>
-<p>The development of this software was supported in part through grants from the</p>
+<p>The development of this software was supported in part through NIH grant P42ES004705 from NIEHS</p>
 <hr>
 </div>
 <div class="section level2">
