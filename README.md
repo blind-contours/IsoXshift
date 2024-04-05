@@ -30,8 +30,6 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 
 ## What’s `IsoXshift`?
 
-<img src="https://github.com/blind-contours/IsoXshift/blob/main/IsoXshift_sticker.png" width="230">
-
 The `IsoXshift` R package offers an approach which identifies the
 minimum effort intervention on two exposures which, if the population
 were given these intervention levels, would result in a target outcome.
@@ -425,14 +423,10 @@ W
 </tbody>
 </table>
 
-Let’s look at the interactions built into this synthetic data:
-
-<img src="https://github.com/blind-contours/IsoXshift/blob/main/man/figures/NIEHS_interactions.png" width="230">
-
-This shows that X1 and X7 has the most synergy or super-additive effect
-so we might expect to find this relationship as the most synergistic
+This data has X1 and X7 has the most synergy or super-additive effect so
+we might expect to find this relationship as the most synergistic
 exposure relationship based on our definition. It is also possible that
-the most efficient intervention is one that intervents on an
+the most efficient intervention is one that intervenes on an
 antagonistic pair, shifting positive associations higher and negative
 lower in the antagonistic interaction.
 
@@ -526,7 +520,7 @@ sim_results <- IsoXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>    user  system elapsed 
-#>  66.048   5.430 948.089
+#>  74.595   3.610 976.269
 
 oracle_parameter <- sim_results$`Oracle Pooled Results`
 k_fold_results <- sim_results$`K-fold Results`
@@ -1366,14 +1360,21 @@ The column Psi shows the expected change in outcome under shift compared
 to no shift. Type indicates which variable was shifted, X1, X5, X1 and
 X5 and then interaction which compares X1-X5 to X1 + X5. So for example
 a Psi of -13.5 for X1 indicates that the outcome reduces by 13.5 when we
-attempt to shift X1 towards the oracle point paramter. Which in this
+attempt to shift X1 towards the oracle point parameter. Which in this
 fold is 0.05. So under a policy where we try and shift X1 towards the
 value 0.05 under restrictions of not violating positivity support the
-outcome goes down by 13.5.
+outcome goes down by 13.5. The deltas in Average Delta columns shows the
+average delta in the fold for each variable. This is the average shift
+we get under our support to get to the oracle parameter. For example
+-13.5 means that the average outcome goes down by 13.5 when shifting X1
+by -0.902 on average, towards our target.
 
-The average delta column indicates the average shift away from each
+Overall, average delta column indicates the average shift away from each
 individuals observed exposure level in order to reach the target under
 restrictions.
+
+In reality, when looking at the Average Delta column we can only reduce
+X1 by about 1 and increase X5 by about 2 with support from our data.
 
 ## Oracle Point Parameters
 

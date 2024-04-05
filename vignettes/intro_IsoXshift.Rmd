@@ -30,7 +30,7 @@ set.seed(seed)
 
 ## Motivation 
 
-The motivation behind the package IsoXshift is to simulate isobolic interaction definitions used in toxicology. In areas of climate change or pollutant control, we are interested in identifying the most efficient set of interventions that lead to a target outcome level and we also want to know what the expected outcome would be if we tried to implement such a targeted intervention on a population understanding that it's not realistically to give all individuals the exact exposure levels due to different likelihoods of exposure. This package identifies the exposure levels for two exposures that, if set, result in the target outcome with minimum change from the original exposure distribution. Then it estimates the expected outcome if we were to try and get the population as close as possible to this optimal intervention strategy. This package analysis mixed exposures, finding the exposure relationship with the strongest synergy and estimates a policy that tries to change people's exposures to these target levels.  
+The motivation behind the package IsoXshift is to simulate isobolic interaction definitions used in toxicology. In areas of climate change or pollutant control, we are interested in identifying the most efficient set of interventions that lead to a target outcome level and we also want to know what the expected outcome would be if we tried to implement such a targeted intervention on a population understanding that it's not realistically to give all individuals the exact exposure levels due to different likelihoods of exposure. This package identifies the exposure levels for two exposures that, if set, result in the target outcome with minimum change from the original exposure distribution. Then it estimates the expected outcome if we were to try and get the population as close as possible to this optimal intervention strategy. This package analysis mixed exposures, finding the exposure relationship with the strongest synergist or antagonistic relationship and estimates a policy that tries to change people's exposures to these target levels.  
 
 
 ## Target Parameter 
@@ -38,20 +38,22 @@ The motivation behind the package IsoXshift is to simulate isobolic interaction 
 IsoXshift uses data-adaptive machine learning methods to identify the exposures with the most synergy. This is defined based on our target parameter: 
 
 $$
-\begin{align}
-    \Psi(\bar{Y}_t, A_i, A_j) = \ &\mathrm{argmin}_{s_i, s_j} f(s_i, s_j)\Big( E_W[Y|A_i = a_i, A_j = a_j, \textbf{A}_{-i,j},W] \nonumber \\
-    &= Y_{\text{target}} \Big) \\
-    &\text{subject to } c_i \in A_i, \ c_j \in A_j \nonumber
-\end{align}
 
+\begin{align}
+  &\Psi(A_i, A_j, W) = \underset{c_i, c_j}{\mathrm{argmin}} 
+  \left(\frac{|c_i - \mu_{A_i}| + |c_j - \mu_{A_j}|}{2}\right) \\
+  &\text{subject to the following constraints:} \nonumber \\
+  &\left|\mathbb{E}_{W, \textbf{A}_{-i,j}} [\mathbb{E} \left[Y \mid A_i = c_i, A_j = c_j, \textbf{A}_{-i,j}, W \right]] - Y_{\text{target}}\right| \leq \epsilon \\
+  &c_i \in \text{supp}(A_i), \ c_j \in \text{supp}(A_j) \nonumber
+\end{align}
 
 $$
 
-This target findings the minimal shift, which is some function of the intervention and observed exposure that results in an expectation that is the same (or close to) a target outcome. This finds the most efficient intervention (most synergistic relationship) that results in a target outcome.
+This target findings the minimal shift that results in an expectation that is the same (or close to) a target outcome. This finds the most efficient intervention (most synergistic or antagonistic relationship) that results in a target outcome.
 
 ## G-computation Approximation
 
-To identify the most synergistic exposure set we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination, on a grid between min and max of the exposures, we get predictions through the model if the exposures are set to the various levels. At each iteration we calculate the mean difference between the new intervention level and the mean natural exposure level. We collect all expectations that are close to our target outcome and then select the ones with this lowest change from the natural exposure levels. This gives us the exposure relationship and levels of intervention, that result in the target outcome.  
+To identify the most efficient exposure set which gets to the target outcome we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination, on a grid between min and max of the exposures, we get predictions through the model if the exposures are set to the various levels. At each iteration we calculate the mean difference between the new intervention level and the mean natural exposure level. We collect all expectations that are close to our target outcome and then select the ones with this lowest change from the natural exposure levels. This gives us the exposure relationship and levels of intervention, that result in the target outcome.  
 
 
 ## Sample Splitting 
@@ -93,7 +95,6 @@ we want to find the region that, if we created a regulation on those chemicals, 
 
 Let's first load the data and investigate the variables: 
 
-## NHANES Data 
 ```{r NHANES data and variables}
 data("NHANES_eurocim")
 
@@ -176,7 +177,7 @@ NHANES_eurocim_imputed <- NHANES_eurocim %>%
 ```
 
 
-## Run CVtreeMLE 
+## Run IsoXshift 
 
 ```{r run IsoXshift for NHANES, warning=FALSE, message=FALSE}
 

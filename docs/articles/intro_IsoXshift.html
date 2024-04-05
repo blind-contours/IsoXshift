@@ -74,7 +74,7 @@ Estimation using Data-Adaptive Stochastic Interventions</h1>
                         <h4 data-toc-skip class="author">David
 McCoy</h4>
             
-            <h4 data-toc-skip class="date">2024-04-03</h4>
+            <h4 data-toc-skip class="date">2024-04-04</h4>
       
       
       <div class="hidden name"><code>intro_IsoXshift.Rmd</code></div>
@@ -122,8 +122,9 @@ outcome with minimum change from the original exposure distribution.
 Then it estimates the expected outcome if we were to try and get the
 population as close as possible to this optimal intervention strategy.
 This package analysis mixed exposures, finding the exposure relationship
-with the strongest synergy and estimates a policy that tries to change
-people’s exposures to these target levels.</p>
+with the strongest synergist or antagonistic relationship and estimates
+a policy that tries to change people’s exposures to these target
+levels.</p>
 </div>
 <div class="section level2">
 <h2 id="target-parameter">Target Parameter<a class="anchor" aria-label="anchor" href="#target-parameter"></a>
@@ -131,32 +132,35 @@ people’s exposures to these target levels.</p>
 <p>IsoXshift uses data-adaptive machine learning methods to identify the
 exposures with the most synergy. This is defined based on our target
 parameter:</p>
-<p>$$ <span class="math display">\[\begin{align}
-    \Psi(\bar{Y}_t, A_i, A_j) = \ &amp;\mathrm{argmin}_{s_i, s_j} f(s_i,
-s_j)\Big( E_W[Y|A_i = a_i, A_j = a_j, \textbf{A}_{-i,j},W] \nonumber \\
-    &amp;= Y_{\text{target}} \Big) \\
-    &amp;\text{subject to } c_i \in A_i, \ c_j \in A_j \nonumber
+<p>$$</p>
+<p><span class="math display">\[\begin{align}
+  &amp;\Psi(A_i, A_j, W) = \underset{c_i, c_j}{\mathrm{argmin}}
+  \left(\frac{|c_i - \mu_{A_i}| + |c_j - \mu_{A_j}|}{2}\right) \\
+  &amp;\text{subject to the following constraints:} \nonumber \\
+  &amp;\left|\mathbb{E}_{W, \textbf{A}_{-i,j}} [\mathbb{E} \left[Y \mid
+A_i = c_i, A_j = c_j, \textbf{A}_{-i,j}, W \right]] -
+Y_{\text{target}}\right| \leq \epsilon \\
+  &amp;c_i \in \text{supp}(A_i), \ c_j \in \text{supp}(A_j) \nonumber
 \end{align}\]</span></p>
 <p>$$</p>
-<p>This target findings the minimal shift, which is some function of the
-intervention and observed exposure that results in an expectation that
-is the same (or close to) a target outcome. This finds the most
-efficient intervention (most synergistic relationship) that results in a
-target outcome.</p>
+<p>This target findings the minimal shift that results in an expectation
+that is the same (or close to) a target outcome. This finds the most
+efficient intervention (most synergistic or antagonistic relationship)
+that results in a target outcome.</p>
 </div>
 <div class="section level2">
 <h2 id="g-computation-approximation">G-computation Approximation<a class="anchor" aria-label="anchor" href="#g-computation-approximation"></a>
 </h2>
-<p>To identify the most synergistic exposure set we employ a
-g-computation framework. We first construct a super learner, or ensemble
-of machine learning algorithms. We then construct all two-way
-combinations and for each combination, on a grid between min and max of
-the exposures, we get predictions through the model if the exposures are
-set to the various levels. At each iteration we calculate the mean
-difference between the new intervention level and the mean natural
-exposure level. We collect all expectations that are close to our target
-outcome and then select the ones with this lowest change from the
-natural exposure levels. This gives us the exposure relationship and
+<p>To identify the most efficient exposure set which gets to the target
+outcome we employ a g-computation framework. We first construct a super
+learner, or ensemble of machine learning algorithms. We then construct
+all two-way combinations and for each combination, on a grid between min
+and max of the exposures, we get predictions through the model if the
+exposures are set to the various levels. At each iteration we calculate
+the mean difference between the new intervention level and the mean
+natural exposure level. We collect all expectations that are close to
+our target outcome and then select the ones with this lowest change from
+the natural exposure levels. This gives us the exposure relationship and
 levels of intervention, that result in the target outcome.</p>
 </div>
 <div class="section level2">
@@ -236,10 +240,6 @@ POP space would maximize telomere length. That is, we want to find the
 region that, if we created a regulation on those chemicals, would result
 in maximal change in elongating telomere length.</p>
 <p>Let’s first load the data and investigate the variables:</p>
-</div>
-<div class="section level2">
-<h2 id="nhanes-data-1">NHANES Data<a class="anchor" aria-label="anchor" href="#nhanes-data-1"></a>
-</h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"NHANES_eurocim"</span><span class="op">)</span></span>
 <span></span>
@@ -313,7 +313,7 @@ do that here:</p>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/across.html" class="external-link">across</a></span><span class="op">(</span><span class="fu"><a href="https://tidyselect.r-lib.org/reference/all_of.html" class="external-link">all_of</a></span><span class="op">(</span><span class="va">covariates</span><span class="op">)</span>, <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">.</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="va">.</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="run-cvtreemle">Run CVtreeMLE<a class="anchor" aria-label="anchor" href="#run-cvtreemle"></a>
+<h2 id="run-isoxshift">Run IsoXshift<a class="anchor" aria-label="anchor" href="#run-isoxshift"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -399,7 +399,7 @@ do that here:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;     user   system  elapsed </span></span>
-<span><span class="co">#&gt;  455.631  185.752 5827.649</span></span></code></pre></div>
+<span><span class="co">#&gt;  261.315   89.374 3504.086</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="k-fold-results">K Fold Results<a class="anchor" aria-label="anchor" href="#k-fold-results"></a>
