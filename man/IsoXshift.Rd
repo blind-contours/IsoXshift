@@ -13,7 +13,6 @@ IsoXshift(
   epsilon,
   estimator = "tmle",
   mu_learner = NULL,
-  g_learner = NULL,
   pi_learner = NULL,
   n_folds = 2,
   outcome_type = "continuous",
@@ -37,9 +36,7 @@ multiple exposures.}
 \item{estimator}{The type of estimator to fit: \code{"tmle"} for targeted
 maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 
-\item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.}
-
-\item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
+\item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.
 g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
 
 \item{pi_learner}{Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.}
@@ -59,13 +56,8 @@ g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg
 
 \item{hn_trunc_thresh}{Truncation level for the clever covariate (default: 10).}
 
-\item{z}{\code{matrix}, \code{data.frame}, or similar containing individual or
-multiple mediators (optional).}
-
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
-
-\item{zeta_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..}
 }
 \value{
 An S3 object of class \code{IsoXshift} containing the results of the
