@@ -40,11 +40,6 @@ adaptive delta method}
 \item{adaptive_delta}{Whether to adaptively change the delta based on positivity
 determined from the clever covariate being below the hn_trunc_thresh level}
 
-\item{max_degree}{Max degree of interaction used in the haldensify fit,
-if used.}
-
-\item{n_bins}{Number of bins to discretize outcome for haldensify if used.}
-
 \item{use_multinomial}{TRUE/FALSE for using multinomial for discretized exposure}
 }
 \value{

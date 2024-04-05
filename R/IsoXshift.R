@@ -15,8 +15,6 @@
 #' baseline covariates. These variables are measured before exposures.
 #' @param a \code{matrix}, \code{data.frame}, or similar containing individual or
 #' multiple exposures.
-#' @param z \code{matrix}, \code{data.frame}, or similar containing individual or
-#' multiple mediators (optional).
 #' @param y \code{numeric} vector of observed outcomes.
 #' @param estimator The type of estimator to fit: \code{"tmle"} for targeted
 #' maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.
@@ -24,9 +22,7 @@
 #' This determines where to place the auxiliary covariate in the logistic tilting regression.
 #' @param pi_learner Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.
 #' @param mu_learner Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.
-#' @param g_learner Learners for fitting Super Learner ensembles to the g-mechanism
 #' g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.
-#' @param zeta_learner Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..
 #' @param n_folds Number of folds to use in cross-validation, default is 2.
 #' @param outcome_type Data type of the outcome, default is "continuous".
 #' @param parallel Whether to parallelize across cores (default: TRUE).
@@ -59,7 +55,6 @@ IsoXshift <- function(w,
                       estimator = "tmle",
                       mu_learner = NULL,
                       g_learner = NULL,
-                      pi_learner = NULL,
                       n_folds = 2,
                       outcome_type = "continuous",
                       parallel = TRUE,
@@ -68,7 +63,6 @@ IsoXshift <- function(w,
                       seed = seed,
                       hn_trunc_thresh = 10,
                       top_n = 1) {
-
   # coerce W to matrix and, if no names in W, assign them generically
   if (!is.data.frame(w)) w <- as.data.frame(w)
   w_names <- colnames(w)
@@ -87,16 +81,11 @@ IsoXshift <- function(w,
     colnames(a) <- a_names
   }
 
+  ## load the learner if none provided
   if (is.null(mu_learner)) {
     sls <- create_sls()
     mu_learner <- sls$mu_learner
   }
-
-  if (is.null(g_learner)) {
-    sls <- create_sls()
-    g_learner <- sls$g_learner
-  }
-
 
   if (is.null(pi_learner)) {
     sls <- create_sls()
@@ -124,12 +113,8 @@ IsoXshift <- function(w,
   data_internal <- data.table::data.table(w, a, y)
   `%notin%` <- Negate(`%in%`)
 
-  if (outcome_type == "binary") {
-    ## create the CV folds
-    data_internal$folds <- create_cv_folds(n_folds, data_internal$y)
-  } else {
-    data_internal$folds <- create_cv_folds(n_folds, data_internal$y)
-  }
+
+  data_internal$folds <- create_cv_folds(n_folds, data_internal$y)
 
   fold_basis_results <- furrr::future_map(unique(data_internal$folds),
     function(fold_k) {

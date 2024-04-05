@@ -143,7 +143,6 @@ proc.time() - ptm
 oracle_parameter <- sim_results$`Oracle Pooled Results`
 k_fold_results <- sim_results$`K-fold Results`
 oracle_targets <- sim_results$`K Fold Oracle Targets`
-
 ```
 
 Of note: these results will be more consistent with higher folds but here we use 6 so readme builds more quickly for users. 

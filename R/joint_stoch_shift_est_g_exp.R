@@ -19,15 +19,11 @@
 #' determined from the clever covariate being below the hn_trunc_thresh level
 #' @param hn_trunc_thresh Truncation level of the clever covariate used in the
 #' adaptive delta method
-#' @param max_degree Max degree of interaction used in the haldensify fit,
-#' if used.
-#' @param n_bins Number of bins to discretize outcome for haldensify if used.
 #' @param outcome_type Type of outcome variable
 #' @param use_multinomial TRUE/FALSE for using multinomial for discretized exposure
 #'
 #' @importFrom data.table as.data.table setnames set copy
 #' @importFrom stats predict
-#' @importFrom haldensify haldensify
 #' @importFrom assertthat assert_that
 #'
 #' @export
